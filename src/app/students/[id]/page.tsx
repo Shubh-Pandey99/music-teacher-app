@@ -21,7 +21,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
         redirect("/students")
     }
 
-    const schedule = JSON.parse(student.scheduleDays as string) as string[]
+    const schedule = student.schedules.map(s => s.day)
 
     return (
         <div className="space-y-6">
