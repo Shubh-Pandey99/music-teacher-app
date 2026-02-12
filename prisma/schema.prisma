@@ -1,0 +1,63 @@
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Teacher {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String
+  name      String?
+  students  Student[]
+  createdAt DateTime  @default(now())
+}
+
+model Student {
+  id           String       @id @default(cuid())
+  teacherId    String
+  teacher      Teacher      @relation(fields: [teacherId], references: [id])
+  name         String
+  parentName   String?
+  phone        String?
+  monthlyFee   Float
+  joiningDate  DateTime     @default(now())
+  scheduleDays String // Stored as JSON string
+  isActive     Boolean      @default(true)
+  monthlyQuota Int          @default(12)
+  attendance   Attendance[]
+  payments     Payment[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  date      DateTime
+  status    String // PRESENT, ABSENT, HOLIDAY, CANCELLED
+  note      String?
+  isExtra   Boolean  @default(false)
+  extraFee  Float    @default(0)
+
+  @@unique([studentId, date])
+}
+
+model Payment {
+  id           String   @id @default(cuid())
+  studentId    String
+  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  amount       Float
+  monthPaidFor DateTime // First day of the month
+  date         DateTime @default(now())
+  notes        String?
+  status       String   @default("PAID") // PAID, PARTIAL, PENDING
+}
