@@ -1,26 +1,10 @@
 
-import { auth } from "@/auth"
-import { NextRequest, NextResponse } from "next/server"
+import NextAuth from "next-auth"
+import { authConfig } from "./auth.config"
 
-export default auth(async function proxy(req: NextRequest & { auth: unknown }) {
-    const isLoggedIn = !!req.auth
-    const { pathname } = req.nextUrl
-
-    const protectedRoutes = ['/dashboard', '/attendance', '/students', '/fees', '/reports']
-    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
-    const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup')
-
-    if (isProtectedRoute && !isLoggedIn) {
-        return NextResponse.redirect(new URL('/login', req.nextUrl))
-    }
-
-    if (isAuthRoute && isLoggedIn) {
-        return NextResponse.redirect(new URL('/dashboard', req.nextUrl))
-    }
-
-    return NextResponse.next()
-})
+export default NextAuth(authConfig).auth
 
 export const config = {
-    matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+    // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
+    matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
 }

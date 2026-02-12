@@ -4,18 +4,15 @@ import Credentials from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import { env } from "@/lib/env"
 import * as bcrypt from "bcryptjs"
-
 import { rateLimit } from "@/lib/rate-limit"
+import { authConfig } from "./auth.config"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+    ...authConfig,
     secret: env.AUTH_SECRET,
     providers: [
         Credentials({
-            credentials: {
-                email: { label: "Email", type: "email" },
-                password: { label: "Password", type: "password" },
-            },
-            authorize: async (credentials) => {
+            async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) {
                     return null
                 }
@@ -23,6 +20,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 const email = credentials.email as string
                 const key = `login-${email}`
 
+                // Rate limiting (simple memory fallback if shared state unavailable)
                 if (!rateLimit(key, 5, 15 * 60 * 1000)) {
                     throw new Error("Too many login attempts. Please try again in 15 minutes.")
                 }
@@ -31,38 +29,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     where: { email },
                 })
 
-                if (!user) {
-                    return null
-                }
+                if (!user) return null
 
                 const passwordsMatch = await bcrypt.compare(
                     credentials.password as string,
                     user.password
                 )
 
-                if (passwordsMatch) {
-                    return user
-                }
-
+                if (passwordsMatch) return user
                 return null
             },
         }),
     ],
-    pages: {
-        signIn: "/login",
-    },
-    callbacks: {
-        async session({ session, token }) {
-            if (token.sub && session.user) {
-                session.user.id = token.sub
-            }
-            return session
-        },
-        async jwt({ token, user }) {
-            if (user) {
-                token.sub = user.id
-            }
-            return token
-        },
-    },
 })
