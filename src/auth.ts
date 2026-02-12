@@ -1,12 +1,14 @@
 
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@/lib/prisma"
+import { env } from "@/lib/env"
 import * as bcrypt from "bcryptjs"
 
-const prisma = new PrismaClient()
+import { rateLimit } from "@/lib/rate-limit"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+    secret: env.AUTH_SECRET,
     providers: [
         Credentials({
             credentials: {
@@ -18,8 +20,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     return null
                 }
 
+                const email = credentials.email as string
+                const key = `login-${email}`
+
+                if (!rateLimit(key, 5, 15 * 60 * 1000)) {
+                    throw new Error("Too many login attempts. Please try again in 15 minutes.")
+                }
+
                 const user = await prisma.teacher.findUnique({
-                    where: { email: credentials.email as string },
+                    where: { email },
                 })
 
                 if (!user) {

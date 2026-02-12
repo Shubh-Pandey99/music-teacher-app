@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+# MusicPro Manager 🎵
+
+A robust, full-stack application for music teachers to manage their students, tracking attendance, and handling fee payments.
+
+## Features
+- **Student Management**: Add, update, and manage student profiles.
+- **Attendance Tracking**: Specialized tracking for monthly quotas (e.g., 12 classes/month) with support for extra classes.
+- **Fee Management**: Track payments in INR (₹) with status indicators (Paid, Partial, Pending).
+- **Dashboard**: Real-time stats on attendance, pending fees, and upcoming schedules.
+- **Reports**: Generate monthly reports and export to CSV.
+- **Secure Auth**: Authentication via NextAuth.js with bcrypt password hashing and rate limiting.
+
+## Tech Stack
+- **Framework**: Next.js 16 (App Router)
+- **Database**: SQLite with Prisma ORM
+- **Styling**: Tailwind CSS 4 & Shadcn UI
+- **Auth**: NextAuth.js 5
+- **Validation**: Zod
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 18+
+- npm/pnpm
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Installation
+1. Clone the repository.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Set up environment variables:
+   Copy `.env.example` to `.env` and fill in the values.
+   ```bash
+   cp .env.example .env
+   ```
+4. Initialize the database:
+   ```bash
+   npx prisma db push
+   ```
+5. Seed the database (optional):
+   ```bash
+   npm run prisma:seed
+   ```
+6. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Scripts
+- `npm run dev`: Start development server.
+- `npm run build`: Build for production.
+- `npm run lint`: Run ESLint checks.
+- `npx prisma studio`: Open database GUI.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deployment Notes
+The app is designed to be deployed on platforms like Vercel or Railway.
+- Ensure `DATABASE_URL` and `AUTH_SECRET` are set in production.
+- For SQLite persistence, use a persistent volume (e.g., on Railway) or migrate to PostgreSQL.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+MIT

@@ -11,45 +11,29 @@ export async function getMonthlyReport(month: number, year: number) {
     const startOfMonth = new Date(year, month, 1)
     const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59)
 
-    const students = await prisma.student.findMany({
+    const studentsWithData = await prisma.student.findMany({
         where: { teacherId: session.user.id, isActive: true },
+        include: {
+            attendance: {
+                where: { date: { gte: startOfMonth, lte: endOfMonth } }
+            },
+            payments: {
+                where: { monthPaidFor: { gte: startOfMonth, lte: endOfMonth } }
+            }
+        },
         orderBy: { name: "asc" },
-    })
-
-    // Attendance Stats
-    const attendance = await prisma.attendance.findMany({
-        where: {
-            student: { teacherId: session.user.id },
-            date: {
-                gte: startOfMonth,
-                lte: endOfMonth,
-            },
-        },
-    })
-
-    // Payment Stats
-    const payments = await prisma.payment.findMany({
-        where: {
-            student: { teacherId: session.user.id },
-            monthPaidFor: {
-                gte: startOfMonth,
-                lte: endOfMonth,
-            },
-        },
     })
 
     let totalCollected = 0
     let totalPending = 0
 
-    const studentReports = students.map((student) => {
+    const studentReports = studentsWithData.map((student) => {
         // Attendance
-        const studentAttendance = attendance.filter(a => a.studentId === student.id)
-        const presentCount = studentAttendance.filter(a => a.status === "PRESENT").length
-        const absentCount = studentAttendance.filter(a => a.status === "ABSENT").length
+        const presentCount = student.attendance.filter(a => a.status === "PRESENT").length
+        const absentCount = student.attendance.filter(a => a.status === "ABSENT").length
 
         // Fees
-        const studentPayments = payments.filter(p => p.studentId === student.id)
-        const paid = studentPayments.reduce((sum, p) => sum + p.amount, 0)
+        const paid = student.payments.reduce((sum, p) => sum + p.amount, 0)
         const pending = Math.max(0, student.monthlyFee - paid)
 
         totalCollected += paid

@@ -1,7 +1,6 @@
 
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import {
@@ -14,14 +13,30 @@ import {
 } from "@/components/ui/table"
 import { Download } from "lucide-react"
 
+interface ReportStudent {
+    id: string
+    name: string
+    present: number
+    quota: number
+    fee: number
+    paid: number
+    pending: number
+    status: string
+}
+
+interface ReportSummary {
+    totalCollected: number
+    totalPending: number
+}
+
 export function ReportsView({
     data,
     summary,
     month,
     year
 }: {
-    data: any[],
-    summary: any,
+    data: ReportStudent[],
+    summary: ReportSummary,
     month: number,
     year: number
 }) {
@@ -76,7 +91,7 @@ export function ReportsView({
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-blue-600">
-                            {data.length > 0 ? (data.reduce((s, d) => s + (d.present / d.quota), 0) / data.length * 100).toFixed(0) : 0}%
+                            {data.length > 0 ? (data.reduce((acc: number, curr: ReportStudent) => acc + (curr.present / curr.quota), 0) / data.length * 100).toFixed(0) : 0}%
                         </div>
                     </CardContent>
                 </Card>

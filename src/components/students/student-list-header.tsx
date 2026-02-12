@@ -18,7 +18,7 @@ import {
 export function StudentListHeader() {
     const router = useRouter()
     const searchParams = useSearchParams()
-    const [isPending, startTransition] = useTransition()
+    const [, startTransition] = useTransition()
 
     const handleSearch = (term: string) => {
         const params = new URLSearchParams(searchParams)

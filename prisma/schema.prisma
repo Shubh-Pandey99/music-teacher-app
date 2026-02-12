@@ -11,6 +11,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  HOLIDAY
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PAID
+  PARTIAL
+  PENDING
+}
+
 model Teacher {
   id        String    @id @default(cuid())
   email     String    @unique
@@ -29,7 +42,7 @@ model Student {
   phone        String?
   monthlyFee   Float
   joiningDate  DateTime     @default(now())
-  scheduleDays String // Stored as JSON string
+  schedules    Schedule[]
   isActive     Boolean      @default(true)
   monthlyQuota Int          @default(12)
   attendance   Attendance[]
@@ -38,26 +51,35 @@ model Student {
   updatedAt    DateTime     @updatedAt
 }
 
-model Attendance {
+model Schedule {
   id        String   @id @default(cuid())
   studentId String
   student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  day       String   // MON, TUE, WED, THU, FRI, SAT, SUN
+  
+  @@unique([studentId, day])
+}
+
+model Attendance {
+  id        String           @id @default(cuid())
+  studentId String
+  student   Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
   date      DateTime
-  status    String // PRESENT, ABSENT, HOLIDAY, CANCELLED
+  status    AttendanceStatus
   note      String?
-  isExtra   Boolean  @default(false)
-  extraFee  Float    @default(0)
+  isExtra   Boolean          @default(false)
+  extraFee  Float            @default(0)
 
   @@unique([studentId, date])
 }
 
 model Payment {
-  id           String   @id @default(cuid())
+  id           String        @id @default(cuid())
   studentId    String
-  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
   amount       Float
-  monthPaidFor DateTime // First day of the month
-  date         DateTime @default(now())
+  monthPaidFor DateTime      // First day of the month
+  date         DateTime      @default(now())
   notes        String?
-  status       String   @default("PAID") // PAID, PARTIAL, PENDING
+  status       PaymentStatus @default(PAID)
 }

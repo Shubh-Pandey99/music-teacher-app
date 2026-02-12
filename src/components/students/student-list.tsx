@@ -6,15 +6,24 @@ import Link from "next/link"
 import { Phone, Calendar } from "lucide-react"
 import { getStudents } from "@/lib/actions/student"
 
+interface Student {
+    id: string
+    name: string
+    isActive: boolean
+    parentName?: string | null
+    phone?: string | null
+    schedules: { day: string }[]
+}
+
 export async function StudentList({ query, sort }: { query?: string; sort?: string }) {
-    const students = await getStudents(query, sort)
+    const students = await getStudents(query, sort) as unknown as Student[]
 
     if (students.length === 0) {
         return (
             <div className="text-center py-10">
                 <p className="text-muted-foreground">No students found.</p>
                 <Button asChild variant="link" className="mt-2">
-                    <Link href="/students/new">Add your first student</Link>
+                    <Link href="/students/new" prefetch={false}>Add your first student</Link>
                 </Button>
             </div>
         )
@@ -22,12 +31,11 @@ export async function StudentList({ query, sort }: { query?: string; sort?: stri
 
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {students.map((student: any) => {
-                // Parse schedule for display
-                const schedule = JSON.parse(student.scheduleDays as string) as string[]
+            {students.map((student) => {
+                const scheduleDaysArr = student.schedules.map(s => s.day)
 
                 return (
-                    <Link href={`/students/${student.id}`} key={student.id}>
+                    <Link href={`/students/${student.id}`} key={student.id} prefetch={false}>
                         <Card className="hover:bg-muted/50 transition-colors">
                             <CardHeader className="pb-2">
                                 <div className="flex justify-between items-start">
@@ -47,7 +55,7 @@ export async function StudentList({ query, sort }: { query?: string; sort?: stri
                                 </div>
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                     <Calendar className="h-3 w-3" />
-                                    <span>{schedule.join(", ")}</span>
+                                    <span>{scheduleDaysArr.join(", ")}</span>
                                 </div>
                             </CardContent>
                         </Card>

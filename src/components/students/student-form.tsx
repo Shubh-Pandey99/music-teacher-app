@@ -18,7 +18,6 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { createStudent, updateStudent } from "@/lib/actions/student"
 import { useTransition } from "react"
-import { useRouter } from "next/navigation"
 
 const formSchema = z.object({
     name: z.string().min(2, {
@@ -44,13 +43,23 @@ const days = [
     { id: "SUN", label: "Sunday" },
 ] as const
 
+interface Student {
+    id: string
+    name: string
+    parentName?: string | null
+    phone?: string | null
+    monthlyFee: number
+    monthlyQuota: number
+    joiningDate: Date
+    schedules: { day: string }[]
+}
+
 interface StudentFormProps {
-    student?: any // Type properly later
+    student?: Student
     isEditing?: boolean
 }
 
 export function StudentForm({ student, isEditing = false }: StudentFormProps) {
-    const router = useRouter()
     const [isPending, startTransition] = useTransition()
 
     const defaultValues: Partial<z.infer<typeof formSchema>> = student
@@ -61,7 +70,7 @@ export function StudentForm({ student, isEditing = false }: StudentFormProps) {
             monthlyFee: student.monthlyFee,
             monthlyQuota: student.monthlyQuota,
             joiningDate: student.joiningDate ? new Date(student.joiningDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-            scheduleDays: typeof student.scheduleDays === 'string' ? JSON.parse(student.scheduleDays) : student.scheduleDays || [],
+            scheduleDays: student.schedules.map(s => s.day),
         }
         : {
             name: "",
@@ -74,6 +83,7 @@ export function StudentForm({ student, isEditing = false }: StudentFormProps) {
         }
 
     const form = useForm<z.infer<typeof formSchema>>({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resolver: zodResolver(formSchema) as any,
         defaultValues,
     })
@@ -96,15 +106,15 @@ export function StudentForm({ student, isEditing = false }: StudentFormProps) {
                     await createStudent(formData)
                 }
             } catch (error) {
-                console.error(error)
-                // Show toast error
+                console.error("Failed to save student:", error)
             }
         })
     }
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <form onSubmit={form.handleSubmit(onSubmit) as any} className="space-y-6">
                 <FormField
                     control={form.control}
                     name="name"
@@ -199,12 +209,13 @@ export function StudentForm({ student, isEditing = false }: StudentFormProps) {
                                                     <FormControl>
                                                         <Checkbox
                                                             checked={field.value?.includes(day.id)}
+                                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                                             onCheckedChange={(checked: any) => {
                                                                 return checked
                                                                     ? field.onChange([...field.value, day.id])
                                                                     : field.onChange(
                                                                         field.value?.filter(
-                                                                            (value) => value !== day.id
+                                                                            (value: string) => value !== day.id
                                                                         )
                                                                     )
                                                             }}

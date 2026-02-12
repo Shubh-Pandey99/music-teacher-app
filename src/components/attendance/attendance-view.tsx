@@ -1,14 +1,14 @@
 
 "use client"
 
-import { useState, useTransition } from "react"
-import { format, isSameDay } from "date-fns"
+import { useTransition } from "react"
+import { format } from "date-fns"
 import { Calendar } from "@/components/ui/calendar"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Check, X, Ban, MinusCircle, User } from "lucide-react"
+import { Check, X, User } from "lucide-react"
 import { upsertAttendance, bulkMarkAttendance } from "@/lib/actions/attendance"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils"
 type Student = {
     id: string
     name: string
-    scheduleDays: string // JSON string
+    schedules: { day: string }[]
     isActive: boolean
     monthlyQuota?: number
 }
@@ -42,12 +42,7 @@ export function AttendanceView({ students, attendance, date, monthlyCounts = {} 
     // Helper to check if student is scheduled for this day
     const isScheduled = (student: Student, date: Date) => {
         const dayName = format(date, "EEE").toUpperCase() // MON, TUE...
-        try {
-            const schedule = JSON.parse(student.scheduleDays) as string[]
-            return schedule.includes(dayName)
-        } catch (e) {
-            return false
-        }
+        return student.schedules?.some(s => s.day === dayName) ?? false
     }
 
     // Filter students
@@ -66,9 +61,7 @@ export function AttendanceView({ students, attendance, date, monthlyCounts = {} 
 
     const handleBulkPresent = () => {
         const idsToMark = scheduledStudents
-            .filter(s => !getStatus(s.id)) // Only mark those without status? Or overwrite? 
-            // Requirement: "Bulk Mark All Present". Usually implies overwrite or fill empty. 
-            // Let's fill empty to avoid accidental overwrites of "Absent".
+            .filter(s => !getStatus(s.id))
             .map(s => s.id)
 
         if (idsToMark.length === 0) return
@@ -91,13 +84,6 @@ export function AttendanceView({ students, attendance, date, monthlyCounts = {} 
                             }
                         }}
                         className="rounded-md border mx-auto"
-                        modifiers={{
-                            hasAttendance: (d) => {
-                                // This would require fetching attendance for the whole month which we don't have yet.
-                                // For now, just show selected.
-                                return false
-                            }
-                        }}
                     />
                 </Card>
             </div>
@@ -180,7 +166,6 @@ function StudentAttendanceCard({
     const completed = monthlyCounts[student.id] || 0
     const remaining = Math.max(0, limit - completed)
     const extra = Math.max(0, completed - limit)
-    const isCompleted = completed >= limit
 
     return (
         <div className={cn(

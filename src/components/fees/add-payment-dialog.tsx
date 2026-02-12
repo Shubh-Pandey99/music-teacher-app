@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label"
 import { addPayment } from "@/lib/actions/fees"
 import { useTransition } from "react"
 
-export function AddPaymentDialog({ students }: { students: any[] }) {
+export function AddPaymentDialog({ students }: { students: { id: string; name: string; monthlyFee: number }[] }) {
     const [open, setOpen] = useState(false)
     const [isPending, startTransition] = useTransition()
 

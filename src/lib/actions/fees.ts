@@ -13,6 +13,7 @@ const PaymentSchema = z.object({
     notes: z.string().optional(),
 })
 
+
 export async function getFeeStatus(month: number, year: number) {
     const session = await auth()
     if (!session?.user?.id) return []
@@ -20,26 +21,23 @@ export async function getFeeStatus(month: number, year: number) {
     const startOfMonth = new Date(year, month, 1)
     const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59)
 
-    const students = await prisma.student.findMany({
+    const studentsWithPayments = await prisma.student.findMany({
         where: { teacherId: session.user.id, isActive: true },
+        include: {
+            payments: {
+                where: {
+                    monthPaidFor: {
+                        gte: startOfMonth,
+                        lte: endOfMonth,
+                    },
+                },
+            },
+        },
         orderBy: { name: "asc" },
     })
 
-    // Get payments for this month
-    const payments = await prisma.payment.findMany({
-        where: {
-            student: { teacherId: session.user.id },
-            monthPaidFor: {
-                gte: startOfMonth,
-                lte: endOfMonth,
-            },
-        },
-    })
-
-    // Calculate status for each student
-    return students.map((student) => {
-        const studentPayments = payments.filter((p) => p.studentId === student.id)
-        const totalPaid = studentPayments.reduce((sum, p) => sum + p.amount, 0)
+    return studentsWithPayments.map((student) => {
+        const totalPaid = student.payments.reduce((sum, p) => sum + p.amount, 0)
         let status = "PENDING"
 
         if (totalPaid >= student.monthlyFee) {
@@ -69,20 +67,19 @@ export async function addPayment(formData: FormData) {
     }
 
     const validated = PaymentSchema.safeParse(raw)
-
     if (!validated.success) {
-        throw new Error("Invalid data")
+        console.error("Payment validation failed:", validated.error.flatten())
+        throw new Error("Invalid data: " + JSON.stringify(validated.error.flatten().fieldErrors))
     }
 
     const { studentId, amount, monthPaidFor, notes } = validated.data
 
-    // Check if full payment matches fee to set status? 
-    // The schema has a `status` field on Payment model, but that might be redundant if we calculate it dynamically.
-    // However, the schema definition actually had `status` on `Payment`.
-    // Let's infer it or just start with PAID/PARTIAL based on amount?
-    // Actually, individual payments are just "payments". The "Status" is for the *Month*.
-    // The Payment model status might be "COMPLETED" or "PENDING" (if online). 
-    // For manual entry, let's assume "PAID". 
+    // Ownership check
+    const student = await prisma.student.findUnique({
+        where: { id: studentId, teacherId: session.user.id },
+        select: { id: true }
+    })
+    if (!student) throw new Error("Unauthorized or Student not found")
 
     await prisma.payment.create({
         data: {
@@ -90,7 +87,7 @@ export async function addPayment(formData: FormData) {
             amount,
             monthPaidFor: new Date(monthPaidFor),
             notes,
-            status: "COMPLETED",
+            status: "PAID",
         },
     })
 

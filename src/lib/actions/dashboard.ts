@@ -16,133 +16,108 @@ export async function getDashboardStats() {
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
     const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59)
 
-    // 1. Total Students
-    const totalStudents = await prisma.student.count({
-        where: { teacherId: session.user.id, isActive: true },
-    })
+    const dayName = today.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase().substring(0, 3) // MON, TUE
 
-    // 2. Today's Attendance
-    const todaysAttendance = await prisma.attendance.findMany({
+    // 1. Total Students & Today's Scheduled
+    const [totalStudents, scheduledTodayCount] = await Promise.all([
+        prisma.student.count({
+            where: { teacherId: session.user.id, isActive: true },
+        }),
+        prisma.student.count({
+            where: {
+                teacherId: session.user.id,
+                isActive: true,
+                schedules: { some: { day: dayName } }
+            },
+        })
+    ])
+
+    // 2. Today's Attendance count
+    const presentToday = await prisma.attendance.count({
         where: {
             student: { teacherId: session.user.id },
-            date: {
-                gte: today,
-                lt: tomorrow,
-            },
+            date: { gte: today, lt: tomorrow },
             status: "PRESENT",
         },
     })
 
-    // Get scheduled students count for today
-    // This is tricky because schedule is JSON. We need to fetch all active students and filter in JS.
-    const allStudents = await prisma.student.findMany({
+    // 3. Pending Fees & Student Progress
+    // We fetch students with their payments and attendance for the month
+    const studentsWithMonthData = await prisma.student.findMany({
         where: { teacherId: session.user.id, isActive: true },
-        select: { id: true, name: true, scheduleDays: true, monthlyFee: true, monthlyQuota: true },
-    })
-
-    const dayName = today.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase().substring(0, 3) // MON, TUE
-    const scheduledToday = allStudents.filter(s => {
-        try {
-            const schedule = JSON.parse(s.scheduleDays as string)
-            return schedule.includes(dayName)
-        } catch { return false }
-    })
-
-    // 3. Pending Fees
-    // Get all payments for this month
-    const payments = await prisma.payment.findMany({
-        where: {
-            student: { teacherId: session.user.id },
-            monthPaidFor: {
-                gte: startOfMonth,
-                lte: endOfMonth,
+        include: {
+            payments: {
+                where: { monthPaidFor: { gte: startOfMonth, lte: endOfMonth } }
             },
+            attendance: {
+                where: {
+                    date: { gte: startOfMonth, lte: endOfMonth },
+                    status: "PRESENT"
+                }
+            }
         },
+        orderBy: { name: "asc" }
     })
 
     let totalPendingAmount = 0
     const studentsWithPendingFees = []
+    const studentProgress = []
 
-    for (const student of allStudents) {
-        const studentPayments = payments.filter(p => p.studentId === student.id)
-        const paid = studentPayments.reduce((sum, p) => sum + p.amount, 0)
+    for (const student of studentsWithMonthData) {
+        const paid = student.payments.reduce((sum, p) => sum + p.amount, 0)
         const pending = Math.max(0, student.monthlyFee - paid)
 
         if (pending > 0) {
             totalPendingAmount += pending
             studentsWithPendingFees.push({ ...student, pending })
         }
+
+        studentProgress.push({
+            id: student.id,
+            name: student.name,
+            monthlyQuota: student.monthlyQuota || 12,
+            completed: student.attendance.length
+        })
     }
-
-    // 5. Monthly Class Progress
-    const monthlyAttendanceCounts = await prisma.attendance.groupBy({
-        by: ['studentId'],
-        _count: {
-            status: true,
-        },
-        where: {
-            studentId: { in: allStudents.map(s => s.id) },
-            date: {
-                gte: startOfMonth,
-                lte: endOfMonth,
-            },
-            status: "PRESENT",
-        },
-    })
-
-    const progressMap = new Map<string, number>()
-    monthlyAttendanceCounts.forEach(c => progressMap.set(c.studentId, c._count.status))
-
-    const studentProgress = allStudents.map(s => ({
-        id: s.id,
-        name: s.name,
-        monthlyQuota: s.monthlyQuota || 12,
-        completed: progressMap.get(s.id) || 0
-    }))
-
-    // Sort by near completion first?? Or name.
-    studentProgress.sort((a, b) => a.name.localeCompare(b.name))
-
 
     // 4. Consecutive Absences (Alert)
     const twoWeeksAgo = new Date(today)
     twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
 
-    // Re-fetch only records needed for alerts
     const recordsForAlerts = await prisma.attendance.findMany({
         where: {
-            studentId: { in: allStudents.map(s => s.id) },
+            student: { teacherId: session.user.id },
             date: { gte: twoWeeksAgo, lt: today },
         },
         orderBy: { date: 'desc' },
-        select: { studentId: true, date: true, status: true }
+        select: { studentId: true, status: true }
     })
 
-    const alertsGrouped = new Map<string, typeof recordsForAlerts>()
+    const alertsGrouped = new Map<string, string[]>()
     recordsForAlerts.forEach(r => {
-        const records = alertsGrouped.get(r.studentId) || []
-        records.push(r)
-        alertsGrouped.set(r.studentId, records)
+        const statuses = alertsGrouped.get(r.studentId) || []
+        statuses.push(r.status)
+        alertsGrouped.set(r.studentId, statuses)
     })
 
     const absentAlerts = []
 
-    for (const [studentId, records] of alertsGrouped.entries()) {
+    for (const [studentId, statuses] of alertsGrouped.entries()) {
         let consecutiveAbsents = 0
-        for (const r of records) {
-            if (r.status === "ABSENT") consecutiveAbsents++
+        for (const status of statuses) {
+            if (status === "ABSENT") consecutiveAbsents++
             else break
         }
         if (consecutiveAbsents >= 3) {
-            const s = allStudents.find(s => s.id === studentId)
+            const s = studentsWithMonthData.find(s => s.id === studentId)
             if (s) absentAlerts.push({ name: s.name, count: consecutiveAbsents })
         }
     }
 
     return {
         totalStudents,
-        presentToday: todaysAttendance.length,
-        scheduledTodayCount: scheduledToday.length,
+        presentToday,
+        scheduledTodayCount,
         totalPendingAmount,
         studentsWithPendingFees,
         absentAlerts,

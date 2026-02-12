@@ -21,10 +21,6 @@ export async function getStudents(query?: string, sort: string = "name") {
     const session = await auth()
     if (!session?.user?.id) return []
 
-    const orderBy = sort === "recent"
-        ? { createdAt: "desc" }
-        : { name: "asc" } as const
-
     const students = await prisma.student.findMany({
         where: {
             teacherId: session.user.id,
@@ -35,6 +31,7 @@ export async function getStudents(query?: string, sort: string = "name") {
                 ]
                 : undefined,
         },
+        include: { schedules: true },
         orderBy: sort === 'recent' ? { joiningDate: 'desc' } : { name: 'asc' },
     })
     return students
@@ -46,6 +43,7 @@ export async function getStudent(id: string) {
 
     const student = await prisma.student.findUnique({
         where: { id },
+        include: { schedules: true }
     })
 
     if (!student || student.teacherId !== session.user.id) return null
@@ -79,7 +77,9 @@ export async function createStudent(formData: FormData) {
         data: {
             ...data,
             teacherId: session.user.id,
-            scheduleDays: JSON.stringify(scheduleDays),
+            schedules: {
+                create: scheduleDays.map(day => ({ day }))
+            },
             joiningDate: joiningDate ? new Date(joiningDate) : new Date(),
         },
     })
@@ -118,7 +118,10 @@ export async function updateStudent(id: string, formData: FormData) {
         where: { id },
         data: {
             ...data,
-            scheduleDays: JSON.stringify(scheduleDays),
+            schedules: {
+                deleteMany: {},
+                create: scheduleDays.map(day => ({ day }))
+            },
             joiningDate: joiningDate ? new Date(joiningDate) : undefined,
         },
     })

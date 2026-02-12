@@ -1,18 +1,28 @@
 
 "use server"
 
+import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/auth"
 
+const attendanceStatusSchema = z.enum(["PRESENT", "ABSENT", "HOLIDAY", "CANCELLED"])
+
+const upsertAttendanceSchema = z.object({
+    studentId: z.string().cuid(),
+    date: z.date(),
+    status: attendanceStatusSchema,
+})
+
+const bulkMarkAttendanceSchema = z.object({
+    studentIds: z.array(z.string().cuid()),
+    date: z.date(),
+    status: attendanceStatusSchema,
+})
+
 export async function getAttendanceByDate(date: Date) {
     const session = await auth()
     if (!session?.user?.id) return { students: [], attendance: [] }
-
-    // Normalize date to start of day or just use the YYYY-MM-DD comparison if storing as DateTime
-    // Prisma stores DateTime as ISO string usually. 
-    // For simplicity, let's assume we store attendance with time set to 00:00:00 UTC or something consistent.
-    // In the create/update, we should ensure we strip time.
 
     const startOfDay = new Date(date)
     startOfDay.setHours(0, 0, 0, 0)
@@ -22,6 +32,7 @@ export async function getAttendanceByDate(date: Date) {
 
     const students = await prisma.student.findMany({
         where: { teacherId: session.user.id, isActive: true },
+        include: { schedules: true },
         orderBy: { name: "asc" },
     })
 
@@ -53,8 +64,7 @@ export async function getAttendanceByDate(date: Date) {
         },
     })
 
-    // Map counts to student ID for easy access { studentId: count }
-    const countsMap = monthlyCounts.reduce((acc, curr) => {
+    const countsMap = monthlyCounts.reduce((acc: Record<string, number>, curr) => {
         acc[curr.studentId] = curr._count.status
         return acc
     }, {} as Record<string, number>)
@@ -62,22 +72,29 @@ export async function getAttendanceByDate(date: Date) {
     return { students, attendance, monthlyCounts: countsMap }
 }
 
-export async function upsertAttendance(studentId: string, date: Date, status: string) {
+export async function upsertAttendance(rawStudentId: string, rawDate: Date, rawStatus: string) {
     const session = await auth()
     if (!session?.user?.id) throw new Error("Unauthorized")
 
-    // Ensure date is normalized
+    const { studentId, date, status } = upsertAttendanceSchema.parse({
+        studentId: rawStudentId,
+        date: rawDate,
+        status: rawStatus,
+    })
+
     const normalizedDate = new Date(date)
     normalizedDate.setHours(0, 0, 0, 0)
 
-    // Verify student belongs to teacher
-    const student = await prisma.student.findUnique({ where: { id: studentId } })
-    if (student?.teacherId !== session.user.id) throw new Error("Unauthorized")
+    const student = await prisma.student.findUnique({
+        where: { id: studentId },
+        select: { id: true, teacherId: true, monthlyQuota: true }
+    })
+
+    if (!student || student.teacherId !== session.user.id) throw new Error("Unauthorized or Student not found")
 
     const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1)
     const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59)
 
-    // Calculate current count excluding THIS day
     const existingCount = await prisma.attendance.count({
         where: {
             studentId,
@@ -90,7 +107,7 @@ export async function upsertAttendance(studentId: string, date: Date, status: st
         }
     })
 
-    const quota = student?.monthlyQuota || 12
+    const quota = student.monthlyQuota || 12
     const isExtra = status === "PRESENT" && (existingCount >= quota)
 
     await prisma.attendance.upsert({
@@ -112,33 +129,35 @@ export async function upsertAttendance(studentId: string, date: Date, status: st
     revalidatePath("/attendance")
 }
 
-export async function bulkMarkAttendance(studentIds: string[], date: Date, status: string) {
+export async function bulkMarkAttendance(rawStudentIds: string[], rawDate: Date, rawStatus: string) {
     const session = await auth()
     if (!session?.user?.id) throw new Error("Unauthorized")
+
+    const { studentIds, date, status } = bulkMarkAttendanceSchema.parse({
+        studentIds: rawStudentIds,
+        date: rawDate,
+        status: rawStatus,
+    })
 
     const normalizedDate = new Date(date)
     normalizedDate.setHours(0, 0, 0, 0)
 
-    // In a real app we should verify all studentIds belong to teacher, 
-    // but for now we trust the client sends valid IDs from the fetched list
-    // or we can just run a query to check.
+    // Verify ownership and get student data in one go
+    const validStudents = await prisma.student.findMany({
+        where: {
+            id: { in: studentIds },
+            teacherId: session.user.id
+        },
+        select: { id: true, monthlyQuota: true }
+    })
 
-    // Using a transaction or Promise.all. 
-    // UpsertMany is not fully supported in Prisma SQLite traditionally but let's see.
-    // We'll use Promise.all for now as it is ~11 students.
-
-    // For bulk mark, we iterate because we need per-student quota check
+    if (validStudents.length !== studentIds.length) {
+        throw new Error("One or more students are not owned by you or do not exist")
+    }
 
     const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1)
     const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59)
 
-    // Get all students to check quotas
-    const students = await prisma.student.findMany({
-        where: { id: { in: studentIds } },
-        select: { id: true, monthlyQuota: true }
-    })
-
-    // Get current counts for all these students
     const counts = await prisma.attendance.groupBy({
         by: ['studentId'],
         _count: { status: true },
@@ -153,31 +172,33 @@ export async function bulkMarkAttendance(studentIds: string[], date: Date, statu
         }
     })
 
-    const countsMap = counts.reduce((acc, curr) => {
+    const countsMap = counts.reduce((acc: Record<string, number>, curr) => {
         acc[curr.studentId] = curr._count.status
         return acc
     }, {} as Record<string, number>)
 
-    await Promise.all(students.map(async (student) => {
-        const count = countsMap[student.id] || 0
-        const isExtra = status === "PRESENT" && (count >= (student.monthlyQuota || 12))
+    await prisma.$transaction(
+        validStudents.map((student: { id: string; monthlyQuota: number }) => {
+            const count = countsMap[student.id] || 0
+            const isExtra = status === "PRESENT" && (count >= (student.monthlyQuota || 12))
 
-        return prisma.attendance.upsert({
-            where: {
-                studentId_date: {
+            return prisma.attendance.upsert({
+                where: {
+                    studentId_date: {
+                        studentId: student.id,
+                        date: normalizedDate
+                    }
+                },
+                update: { status, isExtra },
+                create: {
                     studentId: student.id,
-                    date: normalizedDate
+                    date: normalizedDate,
+                    status,
+                    isExtra
                 }
-            },
-            update: { status, isExtra },
-            create: {
-                studentId: student.id,
-                date: normalizedDate,
-                status,
-                isExtra
-            }
+            })
         })
-    }))
+    )
 
     revalidatePath("/attendance")
 }
