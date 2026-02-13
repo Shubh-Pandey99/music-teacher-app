@@ -23,6 +23,7 @@ async function main() {
             password: hashedPassword
         },
         create: {
+            id: "cjh5u8g5g0000z3j8e5u8g5g0", // Consistent valid CUID for testing
             email,
             name: "Music Teacher",
             password: hashedPassword,
