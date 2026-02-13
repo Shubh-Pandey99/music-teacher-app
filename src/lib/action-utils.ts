@@ -11,6 +11,18 @@ export type ActionResponse<T = any> = {
 }
 
 /**
+ * Helper to get client IP for rate limiting
+ */
+export async function getClientIp() {
+    const h = await headers()
+    const forwarded = h.get("x-forwarded-for")
+    const realIp = h.get("x-real-ip")
+    if (forwarded) return forwarded.split(",")[0].trim()
+    if (realIp) return realIp
+    return "unknown"
+}
+
+/**
  * Standard auth check for server actions
  */
 export async function getAuthorizedSession() {
