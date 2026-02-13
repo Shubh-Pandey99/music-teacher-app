@@ -99,14 +99,15 @@ export function StudentForm({ student, isEditing = false }: StudentFormProps) {
             if (values.joiningDate) formData.append("joiningDate", values.joiningDate)
             values.scheduleDays.forEach((day) => formData.append("scheduleDays", day))
 
-            try {
-                if (isEditing && student?.id) {
-                    await updateStudent(student.id, formData)
-                } else {
-                    await createStudent(formData)
-                }
-            } catch (error) {
-                console.error("Failed to save student:", error)
+            const result = isEditing && student?.id
+                ? await updateStudent(student.id, formData)
+                : await createStudent(formData)
+
+            if (result?.error) {
+                // If the server returns validation errors, we can handle them here.
+                // For now, we'll just log them to the console.
+                console.error("Validation errors:", result.error)
+                // You could also map these back to the form using form.setError
             }
         })
     }
