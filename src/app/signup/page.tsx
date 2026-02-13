@@ -20,13 +20,18 @@ export default function SignupPage() {
     async function handleSubmit(formData: FormData) {
         setError(null)
         setLoading(true)
+
         try {
             const result = await signup(formData)
+
             if (result.success) {
                 router.push("/login?signup=success")
+                return
             }
-        } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : "An error occurred during signup")
+
+            setError(result.error)
+        } catch {
+            setError("Unable to connect to signup service. Please try again.")
         } finally {
             setLoading(false)
         }
