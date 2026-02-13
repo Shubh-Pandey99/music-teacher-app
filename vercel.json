@@ -1,4 +1,4 @@
 {
     "installCommand": "npm install --include=dev",
-    "buildCommand": "npx prisma db push && npm run build"
+    "buildCommand": "npx prisma generate && npx prisma db push --accept-data-loss && npm run build"
 }

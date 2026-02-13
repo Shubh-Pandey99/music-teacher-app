@@ -11,6 +11,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  HOLIDAY
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PAID
+  PARTIAL
+  PENDING
+}
+
 model Teacher {
   id        String    @id @default(cuid())
   email     String    @unique
@@ -55,7 +68,7 @@ model Attendance {
   studentId String
   student   Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
   date      DateTime
-  status    String
+  status    AttendanceStatus
   note      String?
   isExtra   Boolean          @default(false)
   extraFee  Float            @default(0)
@@ -72,5 +85,5 @@ model Payment {
   monthPaidFor DateTime      // First day of the month
   date         DateTime      @default(now())
   notes        String?
-  status       String        @default("PAID")
+  status       PaymentStatus @default(PAID)
 }
