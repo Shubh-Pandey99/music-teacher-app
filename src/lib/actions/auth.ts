@@ -1,5 +1,6 @@
 "use server"
 
+import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import * as bcrypt from "bcryptjs"
 import { z } from "zod"
@@ -11,12 +12,35 @@ const signupSchema = z.object({
     password: z.string().min(8, "Password must be at least 8 characters"),
 })
 
+function getSignupErrorMessage(error: unknown) {
+    if (error instanceof Prisma.PrismaClientInitializationError) {
+        return "Database connection failed. Please verify DATABASE_URL in your deployment settings."
+    }
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === "P2002") {
+            return "Unable to create account. Please check your details and try again."
+        }
+
+        return "Database request failed while creating your account. Please try again."
+    }
+
+    if (error instanceof Prisma.PrismaClientRustPanicError) {
+        return "Database error occurred. Please try again in a few moments."
+    }
+
+    return "Internal server error during signup"
+}
+
 export async function signup(formData: FormData) {
     // Rate limiting: 5 attempts per 15 minutes per IP (approximated by key)
     // In a real app we'd get the IP from headers
     const isAllowed = rateLimit("signup-general", 5, 15 * 60 * 1000)
     if (!isAllowed) {
-        throw new Error("Too many attempts. Please try again later.")
+        return {
+            success: false as const,
+            error: "Too many attempts. Please try again later.",
+        }
     }
 
     const rawName = formData.get("name")
@@ -30,7 +54,10 @@ export async function signup(formData: FormData) {
     })
 
     if (!validated.success) {
-        throw new Error(validated.error.issues[0].message)
+        return {
+            success: false as const,
+            error: validated.error.issues[0].message,
+        }
     }
 
     const { name, email, password } = validated.data
@@ -43,7 +70,10 @@ export async function signup(formData: FormData) {
         if (existingUser) {
             // User enumeration protection: Generic error
             console.warn(`Signup attempt for existing email: ${email}`)
-            throw new Error("Unable to create account. Please check your details and try again.")
+            return {
+                success: false as const,
+                error: "Unable to create account. Please check your details and try again.",
+            }
         }
 
         const hashedPassword = await bcrypt.hash(password, 12)
@@ -56,12 +86,12 @@ export async function signup(formData: FormData) {
             },
         })
 
-        return { success: true }
+        return { success: true as const }
     } catch (error: unknown) {
         console.error("Signup error:", error)
-        if (error instanceof Error && error.message === "Unable to create account. Please check your details and try again.") {
-            throw error
+        return {
+            success: false as const,
+            error: getSignupErrorMessage(error),
         }
-        throw new Error("Internal server error during signup")
     }
 }
