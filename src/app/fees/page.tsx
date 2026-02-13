@@ -20,8 +20,8 @@ export default async function FeesPage({
 
     const monthName = format(new Date(currentYear, currentMonth, 1), "MMMM yyyy")
 
-    const totalPending = studentStatuses.reduce((acc, s) => acc + s.remaining, 0)
-    const totalCollected = studentStatuses.reduce((acc, s) => acc + s.totalPaid, 0)
+    const totalPending = studentStatuses.reduce((acc, s) => Number(acc) + Number(s.remaining), 0)
+    const totalCollected = studentStatuses.reduce((acc, s) => Number(acc) + Number(s.totalPaid), 0)
 
     return (
         <div className="space-y-6 pb-20">

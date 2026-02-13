@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import * as bcrypt from "bcryptjs"
 import { z } from "zod"
 import { rateLimit } from "@/lib/rate-limit"
+import { getClientIp } from "@/lib/action-utils"
 
 const signupSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
@@ -33,13 +34,12 @@ function getSignupErrorMessage(error: unknown) {
 }
 
 export async function signup(formData: FormData) {
-    // Rate limiting: 5 attempts per 15 minutes per IP (approximated by key)
-    // In a real app we'd get the IP from headers
-    const isAllowed = rateLimit("signup-general", 5, 15 * 60 * 1000)
+    const ip = await getClientIp()
+    const isAllowed = rateLimit(`signup-${ip}`, 5, 15 * 60 * 1000)
     if (!isAllowed) {
         return {
             success: false as const,
-            error: "Too many attempts. Please try again later.",
+            error: "Too many signup attempts from this IP. Please try again later.",
         }
     }
 

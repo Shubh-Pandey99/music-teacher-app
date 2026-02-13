@@ -12,7 +12,7 @@ const StudentSchema = z.object({
     parentName: z.string().nullable().optional(),
     phone: z.string().nullable().optional(),
     monthlyFee: z.coerce.number().min(0, "Fee must be positive"),
-    monthlyQuota: z.coerce.number().min(1).default(12),
+    monthlyQuota: z.coerce.number().min(1).max(31, "Quota cannot exceed days in a month").default(12),
     joiningDate: z.string().nullable().optional(),
     scheduleDays: z.array(z.string()).min(1, "Select at least one day"),
 })
@@ -51,9 +51,10 @@ export async function getStudent(id: string) {
     return student
 }
 
-export async function createStudent(formData: FormData) {
-    const session = await auth()
-    if (!session?.user?.id) throw new Error("Unauthorized")
+import { dateUtils, getAuthorizedSession, type ActionResponse } from "@/lib/action-utils"
+
+export async function createStudent(formData: FormData): Promise<ActionResponse> {
+    const session = await getAuthorizedSession()
 
     const rawFormData = {
         name: formData.get("name"),
@@ -68,29 +69,36 @@ export async function createStudent(formData: FormData) {
     const validatedFields = StudentSchema.safeParse(rawFormData)
 
     if (!validatedFields.success) {
-        return { error: validatedFields.error.flatten().fieldErrors }
+        return {
+            success: false,
+            validationErrors: validatedFields.error.flatten().fieldErrors as Record<string, string[]>
+        }
     }
 
     const { scheduleDays, joiningDate, ...data } = validatedFields.data
 
-    await prisma.student.create({
-        data: {
-            ...data,
-            teacherId: session.user.id,
-            schedules: {
-                create: scheduleDays.map(day => ({ day }))
+    try {
+        await prisma.student.create({
+            data: {
+                ...data,
+                teacherId: session.user.id,
+                schedules: {
+                    create: scheduleDays.map(day => ({ day }))
+                },
+                joiningDate: joiningDate ? new Date(joiningDate) : new Date(),
             },
-            joiningDate: joiningDate ? new Date(joiningDate) : new Date(),
-        },
-    })
+        })
 
-    revalidatePath("/students")
-    redirect("/students")
+        revalidatePath("/students")
+        return { success: true }
+    } catch (error) {
+        console.error("Failed to create student:", error)
+        return { success: false, error: "An unexpected error occurred while creating the student." }
+    }
 }
 
-export async function updateStudent(id: string, formData: FormData) {
-    const session = await auth()
-    if (!session?.user?.id) throw new Error("Unauthorized")
+export async function updateStudent(id: string, formData: FormData): Promise<ActionResponse> {
+    const session = await getAuthorizedSession()
 
     const rawFormData = {
         name: formData.get("name"),
@@ -105,30 +113,40 @@ export async function updateStudent(id: string, formData: FormData) {
     const validatedFields = StudentSchema.safeParse(rawFormData)
 
     if (!validatedFields.success) {
-        return { error: validatedFields.error.flatten().fieldErrors }
+        return {
+            success: false,
+            validationErrors: validatedFields.error.flatten().fieldErrors as Record<string, string[]>
+        }
     }
 
     const { scheduleDays, joiningDate, ...data } = validatedFields.data
 
-    // Verify ownership
-    const existing = await prisma.student.findUnique({ where: { id } })
-    if (existing?.teacherId !== session.user.id) throw new Error("Unauthorized")
+    try {
+        // Verify ownership
+        const existing = await prisma.student.findUnique({ where: { id } })
+        if (!existing || existing.teacherId !== session.user.id) {
+            return { success: false, error: "You don't have permission to update this student." }
+        }
 
-    await prisma.student.update({
-        where: { id },
-        data: {
-            ...data,
-            schedules: {
-                deleteMany: {},
-                create: scheduleDays.map(day => ({ day }))
+        await prisma.student.update({
+            where: { id },
+            data: {
+                ...data,
+                schedules: {
+                    deleteMany: {},
+                    create: scheduleDays.map(day => ({ day }))
+                },
+                joiningDate: joiningDate ? new Date(joiningDate) : undefined,
             },
-            joiningDate: joiningDate ? new Date(joiningDate) : undefined,
-        },
-    })
+        })
 
-    revalidatePath("/students")
-    revalidatePath(`/students/${id}`)
-    redirect("/students")
+        revalidatePath("/students")
+        revalidatePath(`/students/${id}`)
+        return { success: true }
+    } catch (error) {
+        console.error("Failed to update student:", error)
+        return { success: false, error: "An unexpected error occurred while updating the student." }
+    }
 }
 
 export async function deleteStudent(id: string) {

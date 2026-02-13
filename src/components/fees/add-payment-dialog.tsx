@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label"
 import { addPayment } from "@/lib/actions/fees"
 import { useTransition } from "react"
 
-export function AddPaymentDialog({ students }: { students: { id: string; name: string; monthlyFee: number }[] }) {
+export function AddPaymentDialog({ students }: { students: { id: string; name: string; monthlyFee: number; remaining: number }[] }) {
     const [open, setOpen] = useState(false)
     const [isPending, startTransition] = useTransition()
 
@@ -32,8 +32,14 @@ export function AddPaymentDialog({ students }: { students: { id: string; name: s
     const [month, setMonth] = useState(new Date().toISOString().slice(0, 7)) // YYYY-MM
     const [notes, setNotes] = useState("")
 
+    const selectedInfo = students.find(s => s.id === selectedStudent)
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
+        if (selectedInfo && Number(amount) > selectedInfo.remaining) {
+            alert(`Amount cannot exceed remaining balance of ₹${selectedInfo.remaining}`)
+            return
+        }
         startTransition(async () => {
             const formData = new FormData()
             formData.append("studentId", selectedStudent)
@@ -98,6 +104,7 @@ export function AddPaymentDialog({ students }: { students: { id: string; name: s
                             type="number"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
+                            max={selectedInfo?.remaining}
                             required
                         />
                     </div>

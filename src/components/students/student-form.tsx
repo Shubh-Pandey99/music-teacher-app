@@ -1,8 +1,9 @@
-
 "use client"
 
+import React, { useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm, DefaultValues, Resolver, SubmitHandler } from "react-hook-form"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,8 +17,8 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { createStudent, updateStudent } from "@/lib/actions/student"
-import { useTransition } from "react"
 
 const formSchema = z.object({
     name: z.string().min(2, {
@@ -26,12 +27,14 @@ const formSchema = z.object({
     parentName: z.string().optional(),
     phone: z.string().optional(),
     monthlyFee: z.coerce.number().min(0),
-    monthlyQuota: z.coerce.number().min(1).default(12),
+    monthlyQuota: z.coerce.number().min(1).max(31, "Quota cannot exceed 31 days"),
     joiningDate: z.string().optional(),
     scheduleDays: z.array(z.string()).refine((value) => value.length > 0, {
         message: "You have to select at least one day.",
     }),
 })
+
+type FormValues = z.infer<typeof formSchema>
 
 const days = [
     { id: "MON", label: "Monday" },
@@ -50,7 +53,7 @@ interface Student {
     phone?: string | null
     monthlyFee: number
     monthlyQuota: number
-    joiningDate: Date
+    joiningDate: Date | string
     schedules: { day: string }[]
 }
 
@@ -62,7 +65,7 @@ interface StudentFormProps {
 export function StudentForm({ student, isEditing = false }: StudentFormProps) {
     const [isPending, startTransition] = useTransition()
 
-    const defaultValues: Partial<z.infer<typeof formSchema>> = student
+    const defaultValues: DefaultValues<FormValues> = student
         ? {
             name: student.name,
             parentName: student.parentName || "",
@@ -82,20 +85,23 @@ export function StudentForm({ student, isEditing = false }: StudentFormProps) {
             scheduleDays: [],
         }
 
-    const form = useForm<z.infer<typeof formSchema>>({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        resolver: zodResolver(formSchema) as any,
+    const form = useForm<FormValues>({
+        resolver: zodResolver(formSchema) as unknown as Resolver<FormValues>,
         defaultValues,
     })
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
+    const router = useRouter()
+    const [error, setError] = React.useState<string | null>(null)
+
+    const onSubmit: SubmitHandler<FormValues> = (values) => {
         startTransition(async () => {
+            setError(null)
             const formData = new FormData()
             formData.append("name", values.name)
             if (values.parentName) formData.append("parentName", values.parentName)
             if (values.phone) formData.append("phone", values.phone)
             formData.append("monthlyFee", values.monthlyFee.toString())
-            formData.append("monthlyQuota", values.monthlyQuota.toString())
+            formData.append("monthlyQuota", (values.monthlyQuota ?? 12).toString())
             if (values.joiningDate) formData.append("joiningDate", values.joiningDate)
             values.scheduleDays.forEach((day) => formData.append("scheduleDays", day))
 
@@ -103,22 +109,27 @@ export function StudentForm({ student, isEditing = false }: StudentFormProps) {
                 ? await updateStudent(student.id, formData)
                 : await createStudent(formData)
 
-            if (result?.error) {
-                // Map server errors back to form fields
-                Object.entries(result.error).forEach(([key, messages]) => {
-                    form.setError(key as any, {
-                        type: "server",
-                        message: (messages as string[])[0]
+            if (result.success) {
+                router.push("/students")
+            } else {
+                if (result.validationErrors) {
+                    Object.entries(result.validationErrors).forEach(([key, messages]) => {
+                        form.setError(key as keyof FormValues, {
+                            type: "server",
+                            message: (messages as string[])[0]
+                        })
                     })
-                })
+                }
+                if (result.error) {
+                    setError(result.error)
+                }
             }
         })
     }
 
     return (
         <Form {...form}>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <form onSubmit={form.handleSubmit(onSubmit) as any} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                     control={form.control}
                     name="name"
@@ -213,8 +224,7 @@ export function StudentForm({ student, isEditing = false }: StudentFormProps) {
                                                     <FormControl>
                                                         <Checkbox
                                                             checked={field.value?.includes(day.id)}
-                                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                            onCheckedChange={(checked: any) => {
+                                                            onCheckedChange={(checked) => {
                                                                 return checked
                                                                     ? field.onChange([...field.value, day.id])
                                                                     : field.onChange(
@@ -238,6 +248,11 @@ export function StudentForm({ student, isEditing = false }: StudentFormProps) {
                         </FormItem>
                     )}
                 />
+                {error && (
+                    <Alert variant="destructive">
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                )}
                 <Button type="submit" className="w-full" disabled={isPending}>
                     {isPending ? "Saving..." : isEditing ? "Update Student" : "Add Student"}
                 </Button>
@@ -245,3 +260,4 @@ export function StudentForm({ student, isEditing = false }: StudentFormProps) {
         </Form>
     )
 }
+

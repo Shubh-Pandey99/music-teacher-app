@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Check, X, User } from "lucide-react"
-import { upsertAttendance, bulkMarkAttendance } from "@/lib/actions/attendance"
+import { upsertAttendance } from "@/lib/actions/attendance"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 
@@ -59,17 +59,7 @@ export function AttendanceView({ students, attendance, date, monthlyCounts = {} 
         })
     }
 
-    const handleBulkPresent = () => {
-        const idsToMark = scheduledStudents
-            .filter(s => !getStatus(s.id))
-            .map(s => s.id)
 
-        if (idsToMark.length === 0) return
-
-        startTransition(async () => {
-            await bulkMarkAttendance(idsToMark, date, "PRESENT")
-        })
-    }
 
     return (
         <div className="flex flex-col lg:flex-row gap-6 h-full">
@@ -96,17 +86,7 @@ export function AttendanceView({ students, attendance, date, monthlyCounts = {} 
                             {scheduledStudents.length} scheduled, {otherStudents.length} others
                         </p>
                     </div>
-                    <div className="flex gap-2">
-                        <Button onClick={() => {
-                            const ids = scheduledStudents.filter(s => !getStatus(s.id)).map(s => s.id)
-                            if (ids.length) startTransition(async () => await bulkMarkAttendance(ids, date, "ABSENT"))
-                        }} variant="secondary" disabled={isPending}>
-                            Mark Unmarked Absent
-                        </Button>
-                        <Button onClick={handleBulkPresent} disabled={isPending}>
-                            Mark All Present
-                        </Button>
-                    </div>
+
                 </div>
 
                 <div className="space-y-2">

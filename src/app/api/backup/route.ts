@@ -1,26 +1,34 @@
-
 import { auth } from "@/auth"
-import fs from "fs"
-import path from "path"
+import { prisma } from "@/lib/prisma"
 
 export async function GET() {
     const session = await auth()
-    if (!session) return new Response("Unauthorized", { status: 401 })
+    if (!session?.user?.id) return new Response("Unauthorized", { status: 401 })
 
-    const dbPath = path.join(process.cwd(), "prisma", "data", "dev.db") // Corrected path for Railway mount
+    // Fetch all teacher data for backup
+    const backupData = await prisma.teacher.findUnique({
+        where: { id: session.user.id },
+        include: {
+            students: {
+                include: {
+                    schedules: true,
+                    attendance: true,
+                    payments: true
+                }
+            }
+        }
+    })
 
-    if (!fs.existsSync(dbPath)) {
-        return new Response("Database not found", { status: 404 })
+    if (!backupData) {
+        return new Response("No data found", { status: 404 })
     }
 
-    const stat = fs.statSync(dbPath)
-    const fileStream = fs.createReadStream(dbPath)
+    const json = JSON.stringify(backupData, null, 2)
 
-    return new Response(fileStream as unknown as ReadableStream, {
+    return new Response(json, {
         headers: {
-            "Content-Type": "application/x-sqlite3",
-            "Content-Disposition": `attachment; filename="backup-${new Date().toISOString()}.db"`,
-            "Content-Length": stat.size.toString(),
+            "Content-Type": "application/json",
+            "Content-Disposition": `attachment; filename="backup-${new Date().toISOString()}.json"`,
         },
     })
 }

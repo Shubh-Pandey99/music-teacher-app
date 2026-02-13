@@ -33,11 +33,11 @@ export async function getMonthlyReport(month: number, year: number) {
         const absentCount = student.attendance.filter(a => a.status === "ABSENT").length
 
         // Fees
-        const paid = student.payments.reduce((sum, p) => sum + p.amount, 0)
+        const paid = student.payments.reduce((sum, p) => sum + Number(p.amount), 0)
         const pending = Math.max(0, student.monthlyFee - paid)
 
-        totalCollected += paid
-        totalPending += pending
+        totalCollected = Number(totalCollected) + Number(paid)
+        totalPending = Number(totalPending) + Number(pending)
 
         return {
             id: student.id,

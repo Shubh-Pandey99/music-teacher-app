@@ -37,7 +37,7 @@ export async function getFeeStatus(month: number, year: number) {
     })
 
     return studentsWithPayments.map((student) => {
-        const totalPaid = student.payments.reduce((sum, p) => sum + p.amount, 0)
+        const totalPaid = student.payments.reduce((sum, p) => sum + Number(p.amount), 0)
         let status = "PENDING"
 
         if (totalPaid >= student.monthlyFee) {
@@ -74,12 +74,32 @@ export async function addPayment(formData: FormData) {
 
     const { studentId, amount, monthPaidFor, notes } = validated.data
 
-    // Ownership check
+    // Ownership check & Fee validation
     const student = await prisma.student.findUnique({
-        where: { id: studentId, teacherId: session.user.id },
-        select: { id: true }
+        where: { id: studentId },
+        include: {
+            payments: {
+                where: {
+                    monthPaidFor: new Date(monthPaidFor)
+                }
+            }
+        }
     })
-    if (!student) throw new Error("Unauthorized or Student not found")
+
+    if (!student || student.teacherId !== session.user.id) {
+        throw new Error("Unauthorized or Student not found")
+    }
+
+    if (!student.isActive) {
+        throw new Error("Cannot record payment for inactive student")
+    }
+
+    const currentPaid = student.payments.reduce((sum, p) => sum + Number(p.amount), 0)
+    const remaining = Number(student.monthlyFee) - currentPaid
+
+    if (amount > remaining) {
+        throw new Error(`Payment exceeds monthly fee. Remaining: ₹${remaining}`)
+    }
 
     await prisma.payment.create({
         data: {
