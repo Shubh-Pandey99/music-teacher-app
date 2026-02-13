@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { signup } from "@/lib/actions/auth"
 import { AlertCircle, Loader2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { toast } from "sonner"
 
 export default function SignupPage() {
     const [error, setError] = useState<string | null>(null)
@@ -25,13 +26,16 @@ export default function SignupPage() {
             const result = await signup(formData)
 
             if (result.success) {
+                toast.success("Account created successfully! Please login.")
                 router.push("/login?signup=success")
                 return
             }
 
             setError(result.error)
+            toast.error(result.error)
         } catch {
             setError("Unable to connect to signup service. Please try again.")
+            toast.error("Unable to connect to signup service")
         } finally {
             setLoading(false)
         }
