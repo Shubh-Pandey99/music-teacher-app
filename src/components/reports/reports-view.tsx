@@ -78,7 +78,7 @@ export function ReportsView({
                         <CardTitle className="text-sm font-medium">Monthly Earnings</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-green-600">₹{summary.totalCollected}</div>
+                        <div className="text-2xl font-bold text-green-600">₹{Number(summary.totalCollected).toLocaleString()}</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -86,7 +86,7 @@ export function ReportsView({
                         <CardTitle className="text-sm font-medium">Pending Fees</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-yellow-600">₹{summary.totalPending}</div>
+                        <div className="text-2xl font-bold text-yellow-600">₹{Number(summary.totalPending).toLocaleString()}</div>
                     </CardContent>
                 </Card>
                 <Card className="hidden lg:block">
@@ -151,9 +151,9 @@ export function ReportsView({
                                                 </div>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-right">₹{student.fee}</TableCell>
-                                        <TableCell className="text-right text-green-600 font-medium">₹{student.paid}</TableCell>
-                                        <TableCell className="text-right text-red-600 font-medium">₹{student.pending}</TableCell>
+                                        <TableCell className="text-right">₹{Number(student.fee).toLocaleString()}</TableCell>
+                                        <TableCell className="text-right text-green-600 font-medium">₹{Number(student.paid).toLocaleString()}</TableCell>
+                                        <TableCell className="text-right text-red-600 font-medium">₹{Number(student.pending).toLocaleString()}</TableCell>
                                         <TableCell className="text-center">
                                             <Badge
                                                 variant={student.status === "PAID" ? "default" : "secondary"}

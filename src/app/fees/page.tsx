@@ -20,8 +20,8 @@ export default async function FeesPage({
 
     const monthName = format(new Date(currentYear, currentMonth, 1), "MMMM yyyy")
 
-    const totalPending = studentStatuses.reduce((acc, s) => acc + s.remaining, 0)
-    const totalCollected = studentStatuses.reduce((acc, s) => acc + s.paidThisMonth, 0)
+    const totalPending = studentStatuses.reduce((acc, s) => acc + Number(s.remaining), 0)
+    const totalCollected = studentStatuses.reduce((acc, s) => acc + Number(s.paidThisMonth), 0)
 
     return (
         <div className="space-y-6 pb-20">
@@ -36,7 +36,7 @@ export default async function FeesPage({
                         <CardTitle className="text-sm font-medium">Total Collected</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-green-600">₹{totalCollected}</div>
+                        <div className="text-2xl font-bold text-green-600">₹{Number(totalCollected).toLocaleString()}</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -44,7 +44,7 @@ export default async function FeesPage({
                         <CardTitle className="text-sm font-medium">Total Pending</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-yellow-600">₹{totalPending}</div>
+                        <div className="text-2xl font-bold text-yellow-600">₹{Number(totalPending).toLocaleString()}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -56,10 +56,10 @@ export default async function FeesPage({
                             <div className="font-medium">{student.name}</div>
                             <div className="text-sm text-muted-foreground flex items-center gap-2">
                                 <Banknote className="h-3 w-3" />
-                                <span>Fee: ₹{student.monthlyFee}</span>
-                                {student.remaining > 0 && (
+                                <span>Fee: ₹{Number(student.monthlyFee).toLocaleString()}</span>
+                                {Number(student.remaining) > 0 && (
                                     <span className="text-red-500 font-medium">
-                                        (Pending: ₹{student.remaining})
+                                        (Pending: ₹{Number(student.remaining).toLocaleString()})
                                     </span>
                                 )}
                             </div>
