@@ -12,12 +12,16 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Download } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
 
 interface ReportStudent {
     id: string
     name: string
     present: number
+    absent: number
     quota: number
+    batchProgress: number
     fee: number
     paid: number
     pending: number
@@ -112,33 +116,55 @@ export function ReportsView({
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Student</TableHead>
-                                <TableHead className="text-center">Attendance</TableHead>
-                                <TableHead className="text-center">Efficiency</TableHead>
+                                <TableHead className="text-center">Monthly Attendance</TableHead>
+                                <TableHead className="text-center">Batch Progress</TableHead>
                                 <TableHead className="text-right">Fee</TableHead>
-                                <TableHead className="text-right">Paid</TableHead>
-                                <TableHead className="text-right">Pending</TableHead>
+                                <TableHead className="text-right">Monthly Paid</TableHead>
+                                <TableHead className="text-right">Total Pending</TableHead>
                                 <TableHead className="text-center">Status</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {data.map((student) => {
-                                const efficiency = Math.min(100, Math.round((student.present / student.quota) * 100))
+                                const usage = Math.min(100, Math.round((student.present / student.quota) * 100))
                                 return (
                                     <TableRow key={student.id}>
-                                        <TableCell className="font-medium">{student.name}</TableCell>
-                                        <TableCell className="text-center">{student.present} / {student.quota}</TableCell>
+                                        <TableCell className="font-medium whitespace-nowrap">{student.name}</TableCell>
                                         <TableCell className="text-center">
-                                            <div className="flex items-center gap-2 justify-center">
-                                                <div className="h-1.5 w-12 bg-secondary rounded-full overflow-hidden">
-                                                    <div className={`h-full ${efficiency >= 100 ? 'bg-green-500' : 'bg-primary'}`} style={{ width: `${efficiency}%` }} />
+                                            <div className="flex flex-col items-center gap-1">
+                                                <span className="text-sm font-medium">{student.present} classes</span>
+                                                <div className="h-1 w-16 bg-secondary rounded-full overflow-hidden">
+                                                    <div className="h-full bg-blue-500" style={{ width: `${usage}%` }} />
                                                 </div>
-                                                <span className="text-xs">{efficiency}%</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <div className="flex flex-col items-center gap-1">
+                                                <span className="text-sm font-bold text-primary">{student.batchProgress} / {student.quota}</span>
+                                                <div className="h-1.5 w-20 bg-secondary rounded-full overflow-hidden border">
+                                                    <div
+                                                        className={cn("h-full transition-all",
+                                                            student.batchProgress >= student.quota ? "bg-green-500" : "bg-primary"
+                                                        )}
+                                                        style={{ width: `${(student.batchProgress / student.quota) * 100}%` }}
+                                                    />
+                                                </div>
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-right">₹{student.fee}</TableCell>
                                         <TableCell className="text-right text-green-600 font-medium">₹{student.paid}</TableCell>
                                         <TableCell className="text-right text-red-600 font-medium">₹{student.pending}</TableCell>
-                                        <TableCell className="text-center">{student.status}</TableCell>
+                                        <TableCell className="text-center">
+                                            <Badge
+                                                variant={student.status === "PAID" ? "default" : "secondary"}
+                                                className={cn(
+                                                    student.status === "PAID" ? "bg-green-600 hover:bg-green-700" :
+                                                        student.status === "PARTIAL" ? "bg-yellow-500" : "bg-red-500"
+                                                )}
+                                            >
+                                                {student.status}
+                                            </Badge>
+                                        </TableCell>
                                     </TableRow>
                                 )
                             })}

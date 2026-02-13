@@ -58,6 +58,7 @@ export async function getMonthlyReport(month: number, year: number) {
             present: presentCount,
             absent: absentCount,
             quota: student.monthlyQuota || 12,
+            batchProgress: progress.progressInCycle,
             fee: student.monthlyFee,
             paid: paidThisMonth,
             pending,

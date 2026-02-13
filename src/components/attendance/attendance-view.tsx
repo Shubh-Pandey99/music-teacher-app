@@ -12,6 +12,7 @@ import { Check, X, User } from "lucide-react"
 import { upsertAttendance } from "@/lib/actions/attendance"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { dateUtils } from "@/lib/date-utils"
 
 type Student = {
     id: string
@@ -53,9 +54,16 @@ export function AttendanceView({ students, attendance, date, monthlyCounts = {} 
         return attendance.find(a => a.studentId === studentId)?.status
     }
 
+    const isFuture = dateUtils.startOfDay(date) > dateUtils.startOfDay(new Date())
+
     const handleMark = (studentId: string, status: AttendanceStatus) => {
+        if (isFuture) return
+
         startTransition(async () => {
-            await upsertAttendance(studentId, date, status)
+            const result = await upsertAttendance(studentId, date, status)
+            if (result && !result.success) {
+                alert(result.error || "Failed to mark attendance")
+            }
         })
     }
 

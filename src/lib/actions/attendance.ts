@@ -17,7 +17,7 @@ const upsertAttendanceSchema = z.object({
 
 
 
-import { dateUtils, getAuthorizedSession } from "@/lib/action-utils"
+import { dateUtils, getAuthorizedSession, type ActionResponse } from "@/lib/action-utils"
 
 export async function getAttendanceByDate(date: Date) {
     const session = await getAuthorizedSession()
@@ -59,68 +59,71 @@ export async function getAttendanceByDate(date: Date) {
     return { students, attendance, monthlyCounts: countsMap }
 }
 
-export async function upsertAttendance(rawStudentId: string, rawDate: Date, rawStatus: string) {
+export async function upsertAttendance(rawStudentId: string, rawDate: Date, rawStatus: string): Promise<ActionResponse> {
     const session = await getAuthorizedSession()
 
-    const { studentId, date, status } = upsertAttendanceSchema.parse({
-        studentId: rawStudentId,
-        date: rawDate,
-        status: rawStatus,
-    })
+    try {
+        const { studentId, date, status } = upsertAttendanceSchema.parse({
+            studentId: rawStudentId,
+            date: rawDate,
+            status: rawStatus,
+        })
 
-    const normalizedDate = dateUtils.startOfDay(date)
-    const today = dateUtils.startOfDay(new Date())
+        const normalizedDate = dateUtils.startOfDay(date)
+        const today = dateUtils.startOfDay(new Date())
 
-    if (normalizedDate > today) {
-        throw new Error("Cannot mark attendance for future dates")
-    }
-
-    const student = await prisma.student.findUnique({
-        where: { id: studentId },
-        select: { id: true, teacherId: true, monthlyQuota: true, joiningDate: true, isActive: true }
-    })
-
-    if (!student || student.teacherId !== session.user.id) {
-        // Log generic error for unauthorized access
-        throw new Error("Unauthorized or Student not found")
-    }
-
-    if (!student.isActive) {
-        throw new Error("Cannot mark attendance for inactive student")
-    }
-
-    if (student.joiningDate && normalizedDate < dateUtils.startOfDay(student.joiningDate)) {
-        throw new Error("Cannot mark attendance before student joining date")
-    }
-
-    const existingCount = await prisma.attendance.count({
-        where: {
-            studentId,
-            status: "PRESENT",
-            date: { not: normalizedDate }
+        if (normalizedDate > today) {
+            return { success: false, error: "Cannot mark attendance for future dates" }
         }
-    })
 
-    const quota = student.monthlyQuota || 12
-    const isExtra = status === "PRESENT" && (existingCount % quota === 0 && existingCount > 0)
+        const student = await prisma.student.findUnique({
+            where: { id: studentId },
+            select: { id: true, teacherId: true, monthlyQuota: true, joiningDate: true, isActive: true }
+        })
 
-    await prisma.attendance.upsert({
-        where: {
-            studentId_date: {
+        if (!student || student.teacherId !== session.user.id) {
+            return { success: false, error: "Unauthorized or Student not found" }
+        }
+
+        if (!student.isActive) {
+            return { success: false, error: "Cannot mark attendance for inactive student" }
+        }
+
+        if (student.joiningDate && normalizedDate < dateUtils.startOfDay(student.joiningDate)) {
+            return { success: false, error: "Cannot mark attendance before student joining date" }
+        }
+
+        const existingCount = await prisma.attendance.count({
+            where: {
+                studentId,
+                status: "PRESENT",
+                date: { not: normalizedDate }
+            }
+        })
+
+        const quota = student.monthlyQuota || 12
+        const isExtra = status === "PRESENT" && (existingCount % quota === 0 && existingCount > 0)
+
+        await prisma.attendance.upsert({
+            where: {
+                studentId_date: {
+                    studentId,
+                    date: normalizedDate,
+                },
+            },
+            update: { status, isExtra },
+            create: {
                 studentId,
                 date: normalizedDate,
+                status,
+                isExtra,
             },
-        },
-        update: { status, isExtra },
-        create: {
-            studentId,
-            date: normalizedDate,
-            status,
-            isExtra,
-        },
-    })
+        })
 
-    revalidatePath("/attendance")
+        revalidatePath("/attendance")
+        return { success: true }
+    } catch (error: any) {
+        console.error("Attendance Error:", error)
+        return { success: false, error: error.message || "Something went wrong" }
+    }
 }
-
-
