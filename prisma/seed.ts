@@ -6,7 +6,7 @@ const prisma = new PrismaClient()
 
 async function main() {
     const email = process.env.SEED_EMAIL || "teacher@music.com"
-    const password = process.env.SEED_PASSWORD || Math.random().toString(36).slice(-12)
+    const password = process.env.SEED_PASSWORD || "password123"
     const hashedPassword = await bcrypt.hash(password, 12)
 
     console.log("------------------------------------------")
