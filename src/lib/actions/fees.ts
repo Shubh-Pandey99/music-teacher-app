@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/auth"
 import { z } from "zod"
-import { dateUtils } from "@/lib/action-utils"
+import { dateUtils, getAuthorizedSession, type ActionResponse } from "@/lib/action-utils"
 
 const PaymentSchema = z.object({
     studentId: z.string(),
@@ -16,107 +16,110 @@ const PaymentSchema = z.object({
 
 
 export async function getFeeStatus(month: number, year: number) {
-    const session = await auth()
-    if (!session?.user?.id) return []
+    try {
+        const session = await auth()
+        if (!session?.user?.id) return []
 
-    const startOfMonth = new Date(year, month, 1)
-    const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59)
+        const studentsWithData = await prisma.student.findMany({
+            where: { teacherId: session.user.id, isActive: true },
+            include: {
+                payments: true,
+                attendance: { where: { status: "PRESENT" } }
+            },
+            orderBy: { name: "asc" },
+        })
 
-    const studentsWithData = await prisma.student.findMany({
-        where: { teacherId: session.user.id, isActive: true },
-        include: {
-            payments: true,
-            attendance: { where: { status: "PRESENT" } }
-        },
-        orderBy: { name: "asc" },
-    })
+        return studentsWithData.map((student) => {
+            // 1. Calculate historical paid
+            const totalPaid = student.payments.reduce((sum, p) => sum + Number(p.amount), 0)
 
-    return studentsWithData.map((student) => {
-        // 1. Calculate historical paid
-        const totalPaid = student.payments.reduce((sum, p) => sum + Number(p.amount), 0)
+            // 2. Calculate month-specific paid
+            const paidThisMonth = student.payments.filter(p => {
+                const d = new Date(p.monthPaidFor)
+                return d.getUTCFullYear() === year && d.getUTCMonth() === month
+            }).reduce((sum, p) => sum + Number(p.amount), 0)
 
-        // 2. Calculate month-specific paid
-        const paidThisMonth = student.payments.filter(p => {
-            const d = new Date(p.monthPaidFor)
-            return d.getUTCFullYear() === year && d.getUTCMonth() === month
-        }).reduce((sum, p) => sum + Number(p.amount), 0)
+            // 3. Calculate cycles based on attendance
+            const progress = dateUtils.getStudentProgress(student.attendance.length, student.monthlyQuota)
+            const requiredCycles = Number(progress.totalCyclesStarted)
+            const totalRequired = requiredCycles * Number(student.monthlyFee)
 
-        // 3. Calculate cycles based on attendance
-        const progress = dateUtils.getStudentProgress(student.attendance.length, student.monthlyQuota)
-        const requiredCycles = Number(progress.totalCyclesStarted)
-        const totalRequired = requiredCycles * Number(student.monthlyFee)
+            const remaining = Math.max(0, totalRequired - Number(totalPaid))
 
-        const remaining = Math.max(0, totalRequired - Number(totalPaid))
+            let status = "PAID"
+            if (remaining > 0) {
+                status = Number(totalPaid) > (totalRequired - Number(student.monthlyFee)) ? "PARTIAL" : "PENDING"
+            }
 
-        let status = "PAID"
-        if (remaining > 0) {
-            status = Number(totalPaid) > (totalRequired - Number(student.monthlyFee)) ? "PARTIAL" : "PENDING"
-        }
-
-        return {
-            ...student,
-            monthlyFee: Number(student.monthlyFee),
-            totalPaid: Number(totalPaid),
-            paidThisMonth: Number(paidThisMonth),
-            remaining: Number(remaining),
-            status,
-        }
-    })
+            return {
+                ...student,
+                monthlyFee: Number(student.monthlyFee),
+                totalPaid: Number(totalPaid),
+                paidThisMonth: Number(paidThisMonth),
+                remaining: Number(remaining),
+                status,
+            }
+        })
+    } catch (error) {
+        console.error("getFeeStatus Error:", error)
+        return []
+    }
 }
 
-export async function addPayment(formData: FormData) {
-    const session = await auth()
-    if (!session?.user?.id) throw new Error("Unauthorized")
+export async function addPayment(formData: FormData): Promise<ActionResponse> {
+    try {
+        const session = await getAuthorizedSession()
 
-    const raw = {
-        studentId: formData.get("studentId"),
-        amount: formData.get("amount"),
-        monthPaidFor: formData.get("monthPaidFor"),
-        notes: formData.get("notes"),
-    }
+        const raw = {
+            studentId: formData.get("studentId"),
+            amount: formData.get("amount"),
+            monthPaidFor: formData.get("monthPaidFor"),
+            notes: formData.get("notes"),
+        }
 
-    const validated = PaymentSchema.safeParse(raw)
-    if (!validated.success) {
-        console.error("Payment validation failed:", validated.error.flatten())
-        throw new Error("Invalid data: " + JSON.stringify(validated.error.flatten().fieldErrors))
-    }
-
-    const { studentId, amount, monthPaidFor, notes } = validated.data
-
-    // Ownership check & Fee validation
-    const student = await prisma.student.findUnique({
-        where: { id: studentId },
-        include: {
-            payments: {
-                where: {
-                    monthPaidFor: new Date(monthPaidFor)
-                }
+        const validated = PaymentSchema.safeParse(raw)
+        if (!validated.success) {
+            return {
+                success: false,
+                error: "Invalid data",
+                validationErrors: validated.error.flatten().fieldErrors as Record<string, string[]>
             }
         }
-    })
 
-    if (!student || student.teacherId !== session.user.id) {
-        throw new Error("Unauthorized or Student not found")
+        const { studentId, amount, monthPaidFor, notes } = validated.data
+        const paymentDate = new Date(monthPaidFor)
+
+        const student = await prisma.student.findUnique({
+            where: { id: studentId }
+        })
+
+        if (!student || student.teacherId !== session.user.id) {
+            return { success: false, error: "Unauthorized or Student not found" }
+        }
+
+        if (!student.isActive) {
+            return { success: false, error: "Cannot record payment for inactive student" }
+        }
+
+        if (amount <= 0) {
+            return { success: false, error: "Amount must be greater than 0" }
+        }
+
+        await prisma.payment.create({
+            data: {
+                studentId,
+                amount: Number(amount),
+                monthPaidFor: paymentDate,
+                notes,
+                status: "PAID",
+            },
+        })
+
+        revalidatePath("/fees")
+        revalidatePath("/dashboard")
+        return { success: true }
+    } catch (error: any) {
+        console.error("addPayment Error:", error)
+        return { success: false, error: error.message || "Failed to add payment" }
     }
-
-    if (!student.isActive) {
-        throw new Error("Cannot record payment for inactive student")
-    }
-
-    // No strict enforcement against overpayment, as it counts as credit for next cycle.
-    // But we still do the basic validation.
-    if (amount <= 0) throw new Error("Amount must be greater than 0")
-
-    await prisma.payment.create({
-        data: {
-            studentId,
-            amount,
-            monthPaidFor: new Date(monthPaidFor),
-            notes,
-            status: "PAID",
-        },
-    })
-
-    revalidatePath("/fees")
-    revalidatePath("/dashboard")
 }

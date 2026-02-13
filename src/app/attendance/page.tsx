@@ -15,7 +15,18 @@ export default async function AttendancePage({
     // Best to construct date carefully.
     const date = new Date(dateStr + "T00:00:00")
 
-    const { students, attendance, monthlyCounts } = await getAttendanceByDate(date)
+    const result = await getAttendanceByDate(date)
+
+    if (!result.success) {
+        return (
+            <div className="p-8 text-center">
+                <h2 className="text-xl font-bold text-red-600">Error</h2>
+                <p className="text-muted-foreground">{result.error || "Failed to load attendance list."}</p>
+            </div>
+        )
+    }
+
+    const { students, attendance, monthlyCounts } = result
 
     return (
         <div className="space-y-6 pb-20">

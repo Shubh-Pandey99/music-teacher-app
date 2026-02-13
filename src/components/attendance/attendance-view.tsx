@@ -57,7 +57,10 @@ export function AttendanceView({ students, attendance, date, monthlyCounts = {} 
     const isFuture = dateUtils.startOfDay(date) > dateUtils.startOfDay(new Date())
 
     const handleMark = (studentId: string, status: AttendanceStatus) => {
-        if (isFuture) return
+        if (isFuture) {
+            alert("Cannot mark attendance for future dates")
+            return
+        }
 
         startTransition(async () => {
             const result = await upsertAttendance(studentId, date, status)

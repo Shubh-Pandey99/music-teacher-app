@@ -18,66 +18,76 @@ const StudentSchema = z.object({
 })
 
 export async function getStudents(query?: string, sort: string = "name") {
-    const session = await auth()
-    if (!session?.user?.id) return []
+    try {
+        const session = await auth()
+        if (!session?.user?.id) return []
 
-    const students = await prisma.student.findMany({
-        where: {
-            teacherId: session.user.id,
-            OR: query
-                ? [
-                    { name: { contains: query } },
-                    { parentName: { contains: query } },
-                ]
-                : undefined,
-        },
-        include: { schedules: true },
-        orderBy: sort === 'recent' ? { joiningDate: 'desc' } : { name: 'asc' },
-    })
-    return students
+        const students = await prisma.student.findMany({
+            where: {
+                teacherId: session.user.id,
+                OR: query
+                    ? [
+                        { name: { contains: query } },
+                        { parentName: { contains: query } },
+                    ]
+                    : undefined,
+            },
+            include: { schedules: true },
+            orderBy: sort === 'recent' ? { joiningDate: 'desc' } : { name: 'asc' },
+        })
+        return students
+    } catch (error) {
+        console.error("getStudents Error:", error)
+        return []
+    }
 }
 
 export async function getStudent(id: string) {
-    const session = await auth()
-    if (!session?.user?.id) return null
+    try {
+        const session = await auth()
+        if (!session?.user?.id) return null
 
-    const student = await prisma.student.findUnique({
-        where: { id },
-        include: { schedules: true }
-    })
+        const student = await prisma.student.findUnique({
+            where: { id },
+            include: { schedules: true }
+        })
 
-    if (!student || student.teacherId !== session.user.id) return null
+        if (!student || student.teacherId !== session.user.id) return null
 
-    return student
+        return student
+    } catch (error) {
+        console.error("getStudent Error:", error)
+        return null
+    }
 }
 
 import { dateUtils, getAuthorizedSession, type ActionResponse } from "@/lib/action-utils"
 
 export async function createStudent(formData: FormData): Promise<ActionResponse> {
-    const session = await getAuthorizedSession()
-
-    const rawFormData = {
-        name: formData.get("name"),
-        parentName: formData.get("parentName"),
-        phone: formData.get("phone"),
-        monthlyFee: formData.get("monthlyFee"),
-        monthlyQuota: formData.get("monthlyQuota"),
-        joiningDate: formData.get("joiningDate"),
-        scheduleDays: formData.getAll("scheduleDays"),
-    }
-
-    const validatedFields = StudentSchema.safeParse(rawFormData)
-
-    if (!validatedFields.success) {
-        return {
-            success: false,
-            validationErrors: validatedFields.error.flatten().fieldErrors as Record<string, string[]>
-        }
-    }
-
-    const { scheduleDays, joiningDate, ...data } = validatedFields.data
-
     try {
+        const session = await getAuthorizedSession()
+
+        const rawFormData = {
+            name: formData.get("name"),
+            parentName: formData.get("parentName"),
+            phone: formData.get("phone"),
+            monthlyFee: formData.get("monthlyFee"),
+            monthlyQuota: formData.get("monthlyQuota"),
+            joiningDate: formData.get("joiningDate"),
+            scheduleDays: formData.getAll("scheduleDays"),
+        }
+
+        const validatedFields = StudentSchema.safeParse(rawFormData)
+
+        if (!validatedFields.success) {
+            return {
+                success: false,
+                validationErrors: validatedFields.error.flatten().fieldErrors as Record<string, string[]>
+            }
+        }
+
+        const { scheduleDays, joiningDate, ...data } = validatedFields.data
+
         await prisma.student.create({
             data: {
                 ...data,
@@ -91,37 +101,37 @@ export async function createStudent(formData: FormData): Promise<ActionResponse>
 
         revalidatePath("/students")
         return { success: true }
-    } catch (error) {
+    } catch (error: any) {
         console.error("Failed to create student:", error)
-        return { success: false, error: "An unexpected error occurred while creating the student." }
+        return { success: false, error: error.message || "An unexpected error occurred while creating the student." }
     }
 }
 
 export async function updateStudent(id: string, formData: FormData): Promise<ActionResponse> {
-    const session = await getAuthorizedSession()
-
-    const rawFormData = {
-        name: formData.get("name"),
-        parentName: formData.get("parentName"),
-        phone: formData.get("phone"),
-        monthlyFee: formData.get("monthlyFee"),
-        monthlyQuota: formData.get("monthlyQuota"),
-        joiningDate: formData.get("joiningDate"),
-        scheduleDays: formData.getAll("scheduleDays"),
-    }
-
-    const validatedFields = StudentSchema.safeParse(rawFormData)
-
-    if (!validatedFields.success) {
-        return {
-            success: false,
-            validationErrors: validatedFields.error.flatten().fieldErrors as Record<string, string[]>
-        }
-    }
-
-    const { scheduleDays, joiningDate, ...data } = validatedFields.data
-
     try {
+        const session = await getAuthorizedSession()
+
+        const rawFormData = {
+            name: formData.get("name"),
+            parentName: formData.get("parentName"),
+            phone: formData.get("phone"),
+            monthlyFee: formData.get("monthlyFee"),
+            monthlyQuota: formData.get("monthlyQuota"),
+            joiningDate: formData.get("joiningDate"),
+            scheduleDays: formData.getAll("scheduleDays"),
+        }
+
+        const validatedFields = StudentSchema.safeParse(rawFormData)
+
+        if (!validatedFields.success) {
+            return {
+                success: false,
+                validationErrors: validatedFields.error.flatten().fieldErrors as Record<string, string[]>
+            }
+        }
+
+        const { scheduleDays, joiningDate, ...data } = validatedFields.data
+
         // Verify ownership
         const existing = await prisma.student.findUnique({ where: { id } })
         if (!existing || existing.teacherId !== session.user.id) {
@@ -143,19 +153,26 @@ export async function updateStudent(id: string, formData: FormData): Promise<Act
         revalidatePath("/students")
         revalidatePath(`/students/${id}`)
         return { success: true }
-    } catch (error) {
+    } catch (error: any) {
         console.error("Failed to update student:", error)
-        return { success: false, error: "An unexpected error occurred while updating the student." }
+        return { success: false, error: error.message || "An unexpected error occurred while updating the student." }
     }
 }
 
-export async function deleteStudent(id: string) {
-    const session = await auth()
-    if (!session?.user?.id) throw new Error("Unauthorized")
+export async function deleteStudent(id: string): Promise<ActionResponse> {
+    try {
+        const session = await getAuthorizedSession()
 
-    const existing = await prisma.student.findUnique({ where: { id } })
-    if (existing?.teacherId !== session.user.id) throw new Error("Unauthorized")
+        const existing = await prisma.student.findUnique({ where: { id } })
+        if (!existing || existing.teacherId !== session.user.id) {
+            return { success: false, error: "Unauthorized" }
+        }
 
-    await prisma.student.delete({ where: { id } })
-    revalidatePath("/students")
+        await prisma.student.delete({ where: { id } })
+        revalidatePath("/students")
+        return { success: true }
+    } catch (error: any) {
+        console.error("deleteStudent Error:", error)
+        return { success: false, error: error.message || "Failed to delete student" }
+    }
 }
