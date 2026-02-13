@@ -64,8 +64,8 @@ export async function getDashboardStats() {
     const studentProgress = []
 
     for (const student of studentsWithMonthData) {
-        const paid = student.payments.reduce((sum, p) => sum + Number(p.amount), 0)
-        const pending = Math.max(0, Number(student.monthlyFee) - paid)
+        const paid = student.payments.reduce((sum, p) => Number(sum) + (parseFloat(p.amount.toString()) || 0), 0)
+        const pending = Math.max(0, (parseFloat(student.monthlyFee.toString()) || 0) - paid)
 
         if (pending > 0) {
             totalPendingAmount = Number(totalPendingAmount) + Number(pending)

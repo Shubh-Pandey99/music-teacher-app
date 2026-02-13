@@ -37,7 +37,7 @@ export async function getFeeStatus(month: number, year: number) {
     })
 
     return studentsWithPayments.map((student) => {
-        const totalPaid = student.payments.reduce((sum, p) => sum + Number(p.amount), 0)
+        const totalPaid = student.payments.reduce((sum, p) => Number(sum) + (parseFloat(p.amount.toString()) || 0), 0)
         let status = "PENDING"
 
         if (totalPaid >= student.monthlyFee) {
