@@ -32,10 +32,16 @@ export async function getFeeStatus(month: number, year: number) {
     })
 
     return studentsWithData.map((student) => {
-        // Calculate total historical paid
+        // 1. Calculate historical paid
         const totalPaid = student.payments.reduce((sum, p) => sum + Number(p.amount), 0)
 
-        // Calculate cycles based on attendance
+        // 2. Calculate month-specific paid
+        const paidThisMonth = student.payments.filter(p => {
+            const d = new Date(p.monthPaidFor)
+            return d.getUTCFullYear() === year && d.getUTCMonth() === month
+        }).reduce((sum, p) => sum + Number(p.amount), 0)
+
+        // 3. Calculate cycles based on attendance
         const progress = dateUtils.getStudentProgress(student.attendance.length, student.monthlyQuota)
         const requiredCycles = progress.totalCyclesStarted
         const totalRequired = requiredCycles * Number(student.monthlyFee)
@@ -50,6 +56,7 @@ export async function getFeeStatus(month: number, year: number) {
         return {
             ...student,
             totalPaid,
+            paidThisMonth,
             remaining,
             status,
         }

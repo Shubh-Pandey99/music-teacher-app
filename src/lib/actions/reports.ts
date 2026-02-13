@@ -32,9 +32,11 @@ export async function getMonthlyReport(month: number, year: number) {
         const presentCount = monthAttendance.filter(a => a.status === "PRESENT").length
         const absentCount = monthAttendance.filter(a => a.status === "ABSENT").length
 
-        const monthPayments = student.payments.filter(p =>
-            p.monthPaidFor >= startOfMonth && p.monthPaidFor <= endOfMonth
-        )
+        const monthPayments = student.payments.filter(p => {
+            const d = new Date(p.monthPaidFor)
+            // Use UTC to match the YYYY-MM-DD format sent by the dialog
+            return d.getUTCFullYear() === year && d.getUTCMonth() === month
+        })
         const paidThisMonth = monthPayments.reduce((sum, p) => sum + Number(p.amount), 0)
 
         // 2. Lifetime Status (Cycle based)
