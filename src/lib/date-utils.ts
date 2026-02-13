@@ -22,8 +22,12 @@ export const dateUtils = {
     getStudentProgress(presentsCount: number, quota: number) {
         const q = quota || 12
         const currentCycle = Math.floor(presentsCount / q)
-        const progressInCycle = presentsCount % q
-        // A new cycle starts on the 1st class, or when a full quota is finished
+
+        // If count is 12, 24, etc., we want to show it as "Full" (12/12) 
+        // until the next class (13th, 25th) starts the next cycle.
+        const progressInCycle = (presentsCount > 0 && presentsCount % q === 0) ? q : (presentsCount % q)
+
+        // A new cycle starts on the 1st class, and then every class after a full quota (13th, 25th, etc.)
         const totalCyclesStarted = Math.floor(presentsCount / q) + (presentsCount % q > 0 || presentsCount === 0 ? 1 : 0)
 
         return {

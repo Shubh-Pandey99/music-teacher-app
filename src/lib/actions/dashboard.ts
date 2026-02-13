@@ -66,22 +66,26 @@ export async function getDashboardStats() {
         const totalPaid = student.payments.reduce((sum, p) => sum + Number(p.amount), 0)
 
         // Calculate cycles based on attendance
-        const progress = dateUtils.getStudentProgress(student.attendance.length, student.monthlyQuota)
-        const requiredCycles = progress.totalCyclesStarted
+        const progress = dateUtils.getStudentProgress(Number(student.attendance.length), Number(student.monthlyQuota))
+        const requiredCycles = Number(progress.totalCyclesStarted)
         const totalRequired = requiredCycles * Number(student.monthlyFee)
 
-        const pending = Math.max(0, totalRequired - totalPaid)
+        const pending = Math.max(0, totalRequired - Number(totalPaid))
 
         if (pending > 0) {
             totalPendingAmount = Number(totalPendingAmount) + Number(pending)
-            studentsWithPendingFees.push({ ...student, pending: Number(pending) })
+            studentsWithPendingFees.push({
+                ...student,
+                monthlyFee: Number(student.monthlyFee),
+                pending: Number(pending)
+            })
         }
 
         studentProgress.push({
             id: student.id,
             name: student.name,
-            monthlyQuota: student.monthlyQuota || 12,
-            completed: progress.progressInCycle
+            monthlyQuota: Number(student.monthlyQuota || 12),
+            completed: Number(progress.progressInCycle)
         })
     }
 

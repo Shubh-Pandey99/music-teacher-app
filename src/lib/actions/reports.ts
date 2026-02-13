@@ -44,24 +44,24 @@ export async function getMonthlyReport(month: number, year: number) {
         const totalPaid = student.payments.reduce((sum, p) => sum + Number(p.amount), 0)
 
         const progress = dateUtils.getStudentProgress(totalPresents, student.monthlyQuota)
-        const requiredCycles = progress.totalCyclesStarted
+        const requiredCycles = Number(progress.totalCyclesStarted)
         const totalRequired = requiredCycles * Number(student.monthlyFee)
 
         const pending = Math.max(0, totalRequired - totalPaid)
 
-        totalCollected += paidThisMonth
-        totalPending += pending
+        totalCollected += Number(paidThisMonth)
+        totalPending += Number(pending)
 
         return {
             id: student.id,
             name: student.name,
-            present: presentCount,
-            absent: absentCount,
-            quota: student.monthlyQuota || 12,
-            batchProgress: progress.progressInCycle,
-            fee: student.monthlyFee,
-            paid: paidThisMonth,
-            pending,
+            present: Number(presentCount),
+            absent: Number(absentCount),
+            quota: Number(student.monthlyQuota || 12),
+            batchProgress: Number(progress.progressInCycle),
+            fee: Number(student.monthlyFee),
+            paid: Number(paidThisMonth),
+            pending: Number(pending),
             status: pending === 0 ? "PAID" : totalPaid > (totalRequired - Number(student.monthlyFee)) ? "PARTIAL" : "PENDING"
         }
     })

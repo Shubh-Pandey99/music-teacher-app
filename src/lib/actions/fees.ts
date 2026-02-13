@@ -43,21 +43,22 @@ export async function getFeeStatus(month: number, year: number) {
 
         // 3. Calculate cycles based on attendance
         const progress = dateUtils.getStudentProgress(student.attendance.length, student.monthlyQuota)
-        const requiredCycles = progress.totalCyclesStarted
+        const requiredCycles = Number(progress.totalCyclesStarted)
         const totalRequired = requiredCycles * Number(student.monthlyFee)
 
-        const remaining = Math.max(0, totalRequired - totalPaid)
+        const remaining = Math.max(0, totalRequired - Number(totalPaid))
 
         let status = "PAID"
         if (remaining > 0) {
-            status = totalPaid > (totalRequired - Number(student.monthlyFee)) ? "PARTIAL" : "PENDING"
+            status = Number(totalPaid) > (totalRequired - Number(student.monthlyFee)) ? "PARTIAL" : "PENDING"
         }
 
         return {
             ...student,
-            totalPaid,
-            paidThisMonth,
-            remaining,
+            monthlyFee: Number(student.monthlyFee),
+            totalPaid: Number(totalPaid),
+            paidThisMonth: Number(paidThisMonth),
+            remaining: Number(remaining),
             status,
         }
     })
