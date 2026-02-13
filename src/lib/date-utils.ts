@@ -19,21 +19,31 @@ export const dateUtils = {
     endOfMonth(date: Date) {
         return new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999)
     },
-    getStudentProgress(presentsCount: number, quota: number) {
+    getStudentProgress(presentsCount: number, quota: number, paidCycles: number = 0) {
         const q = quota || 12
-        const currentCycle = Math.floor(presentsCount / q)
+        const totalPaidClasses = paidCycles * q
 
-        // If count is 12, 24, etc., we want to show it as "Full" (12/12) 
-        // until the next class (13th, 25th) starts the next cycle.
-        const progressInCycle = (presentsCount > 0 && presentsCount % q === 0) ? q : (presentsCount % q)
+        // Classes beyond what has been paid for
+        const remainingClasses = presentsCount - totalPaidClasses
 
-        // A new cycle starts on the 1st class, and then every class after a full quota (13th, 25th, etc.)
-        const totalCyclesStarted = Math.floor(presentsCount / q) + (presentsCount % q > 0 || presentsCount === 0 ? 1 : 0)
+        // Is the current usage covered by payments?
+        // If remainingClasses is less than 1 quota, they are "Paid" for the current batch
+        // If remainingClasses is >= 1 quota, they are "Unpaid" for at least one batch
+        const isPaid = remainingClasses < q
 
         return {
-            currentCycle,
-            progressInCycle,
-            totalCyclesStarted,
+            remainingClasses,
+            quota: q,
+            isPaid,
+            // For the progress bar:
+            // If they are paid, show their progress in the CURRENT cycle (e.g. 2/12)
+            // If they are unpaid, show their total unpaid classes (e.g. 14/12)
+            displayCount: isPaid ? (remainingClasses % q + (remainingClasses < 0 ? q : 0)) % q : remainingClasses,
+            // Actually, the user's analogy says if 14/12 and they pay, it resets to 2/12.
+            // So displayCount should be:
+            // If paid: the count in the NEXT (partially filled) cycle.
+            // If unpaid: the total count that needs payment.
+            progressValue: isPaid ? (remainingClasses % q) : remainingClasses
         }
     }
 }

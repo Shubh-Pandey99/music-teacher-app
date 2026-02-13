@@ -4,6 +4,7 @@ import { Users, UserCheck, Banknote, Calendar, AlertTriangle } from "lucide-reac
 import { getDashboardStats } from "@/lib/actions/dashboard"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 export default async function DashboardPage() {
     const stats = await getDashboardStats()
@@ -108,41 +109,54 @@ export default async function DashboardPage() {
                     <CardHeader>
                         <CardTitle className="text-lg font-semibold flex items-center gap-2">
                             <Calendar className="h-5 w-5 text-blue-500" />
-                            Monthly Class Progress
+                            Class Cycle Progress
                         </CardTitle>
-                        <CardDescription>Track student class completion (Standard: 12/month). Resets monthly.</CardDescription>
+                        <CardDescription>Tracks progress against paid classes. Resets to next cycle after payment.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
                             {stats.studentProgress.map((student) => {
                                 const completed = student.completed
                                 const limit = student.monthlyQuota
+                                const isUnpaid = completed >= limit
                                 const remaining = Math.max(0, limit - completed)
                                 const percentage = Math.min(100, (completed / limit) * 100)
-                                const isCompleted = completed >= limit
-                                const isWarning = remaining <= 2 && remaining > 0
+                                const isWarning = !isUnpaid && remaining <= 2 && remaining > 0
 
                                 return (
                                     <div key={student.id} className="space-y-1">
                                         <div className="flex justify-between text-sm">
                                             <span className="font-medium">{student.name}</span>
-                                            <span className="text-muted-foreground text-xs">{completed}/{limit}</span>
+                                            <span className={cn(
+                                                "text-xs font-medium",
+                                                isUnpaid ? "text-red-600" : "text-muted-foreground"
+                                            )}>
+                                                {completed}/{limit}
+                                            </span>
                                         </div>
                                         <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
                                             <div
-                                                className={`h-full transition-all duration-500 ${isCompleted ? "bg-green-500" : isWarning ? "bg-yellow-500" : "bg-blue-600"}`}
+                                                className={cn(
+                                                    "h-full transition-all duration-500",
+                                                    isUnpaid ? "bg-red-500" : isWarning ? "bg-yellow-500" : "bg-blue-600"
+                                                )}
                                                 style={{ width: `${percentage}%` }}
                                             />
                                         </div>
                                         <div className="flex justify-between items-center h-4">
+                                            {isUnpaid && (
+                                                <span className="text-[10px] text-red-600 font-bold bg-red-50 px-1.5 py-0.5 rounded-full">
+                                                    Unpaid Balance
+                                                </span>
+                                            )}
                                             {isWarning && (
                                                 <span className="text-[10px] text-yellow-600 font-bold bg-yellow-50 px-1.5 py-0.5 rounded-full">
                                                     {remaining} classes remaining
                                                 </span>
                                             )}
-                                            {isCompleted && (
+                                            {!isUnpaid && !isWarning && (
                                                 <span className="text-[10px] text-green-600 font-bold bg-green-50 px-1.5 py-0.5 rounded-full">
-                                                    Completed Monthly Quota
+                                                    Next Cycle
                                                 </span>
                                             )}
                                         </div>

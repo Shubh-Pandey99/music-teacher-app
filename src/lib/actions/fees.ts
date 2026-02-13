@@ -32,23 +32,27 @@ export async function getFeeStatus(month: number, year: number) {
         return studentsWithData.map((student) => {
             // 1. Calculate historical paid
             const totalPaid = student.payments.reduce((sum, p) => sum + Number(p.amount), 0)
+            const paidCycles = Math.floor(totalPaid / (Number(student.monthlyFee) || 1))
 
-            // 2. Calculate month-specific paid
+            // 2. Calculate month-specific paid (for UI indicator only)
             const paidThisMonth = student.payments.filter(p => {
                 const d = new Date(p.monthPaidFor)
                 return d.getUTCFullYear() === year && d.getUTCMonth() === month
             }).reduce((sum, p) => sum + Number(p.amount), 0)
 
-            // 3. Calculate cycles based on attendance
-            const progress = dateUtils.getStudentProgress(student.attendance.length, student.monthlyQuota)
-            const requiredCycles = Number(progress.totalCyclesStarted)
-            const totalRequired = requiredCycles * Number(student.monthlyFee)
+            // 3. Calculate progress and status
+            const totalPresents = student.attendance.length
+            const progress = dateUtils.getStudentProgress(totalPresents, student.monthlyQuota, paidCycles)
 
-            const remaining = Math.max(0, totalRequired - Number(totalPaid))
+            // Required cycles for financial calculation
+            const totalRequiredCycles = Math.ceil(totalPresents / (student.monthlyQuota || 12))
+            const totalRequiredAmount = totalRequiredCycles * Number(student.monthlyFee)
+
+            const remaining = Math.max(0, totalRequiredAmount - Number(totalPaid))
 
             let status = "PAID"
             if (remaining > 0) {
-                status = Number(totalPaid) > (totalRequired - Number(student.monthlyFee)) ? "PARTIAL" : "PENDING"
+                status = Number(totalPaid) > (totalRequiredAmount - Number(student.monthlyFee)) ? "PARTIAL" : "PENDING"
             }
 
             return {
@@ -58,6 +62,7 @@ export async function getFeeStatus(month: number, year: number) {
                 paidThisMonth: Number(paidThisMonth),
                 remaining: Number(remaining),
                 status,
+                progress, // Pass the full progress object
             }
         })
     } catch (error) {

@@ -47,19 +47,22 @@ export async function getAttendanceByDate(date: Date) {
             },
         })
 
-        const allAttendance = await prisma.attendance.findMany({
-            where: {
-                student: { teacherId: session.user.id, isActive: true },
-                status: "PRESENT",
-            },
-            select: { studentId: true }
+        // Fetch ALL present attendance and ALL payments for these students to calculate their lifecycle progress
+        const studentsData = await prisma.student.findMany({
+            where: { teacherId: session.user.id, isActive: true },
+            include: {
+                attendance: { where: { status: "PRESENT" } },
+                payments: true
+            }
         })
 
         const countsMap: Record<string, number> = {}
-        students.forEach(s => {
-            const studentPresents = allAttendance.filter(a => a.studentId === s.id).length
-            const progress = dateUtils.getStudentProgress(studentPresents, s.monthlyQuota)
-            countsMap[s.id] = Number(progress.progressInCycle)
+        studentsData.forEach(s => {
+            const totalPaid = s.payments.reduce((sum, p) => sum + Number(p.amount), 0)
+            const paidCycles = Math.floor(totalPaid / (Number(s.monthlyFee) || 1))
+
+            const progress = dateUtils.getStudentProgress(s.attendance.length, s.monthlyQuota, paidCycles)
+            countsMap[s.id] = Number(progress.displayCount)
         })
 
         return { success: true, students, attendance, monthlyCounts: countsMap }
@@ -92,7 +95,7 @@ export async function upsertAttendance(rawStudentId: string, rawDate: Date, rawS
 
         const student = await prisma.student.findUnique({
             where: { id: studentId },
-            select: { id: true, teacherId: true, monthlyQuota: true, joiningDate: true, isActive: true }
+            select: { id: true, teacherId: true, monthlyQuota: true, joiningDate: true, isActive: true, monthlyFee: true }
         })
 
         if (!student || student.teacherId !== session.user.id) {
@@ -107,7 +110,7 @@ export async function upsertAttendance(rawStudentId: string, rawDate: Date, rawS
             return { success: false, error: "Cannot mark attendance before student joining date" }
         }
 
-        const existingCount = await prisma.attendance.count({
+        const totalPresents = await prisma.attendance.count({
             where: {
                 studentId,
                 status: "PRESENT",
@@ -115,8 +118,17 @@ export async function upsertAttendance(rawStudentId: string, rawDate: Date, rawS
             }
         })
 
+        const totalPaid = await prisma.payment.aggregate({
+            where: { studentId },
+            _sum: { amount: true }
+        })
+
         const quota = student.monthlyQuota || 12
-        const isExtra = status === "PRESENT" && (existingCount % quota === 0 && existingCount > 0)
+        const paidCycles = Math.floor(Number(totalPaid._sum.amount || 0) / (Number(student.monthlyFee) || 1))
+
+        // A class is 'Extra' if the total count (including this one if it's PRESENT) 
+        // exceeds the total paid capacity.
+        const isExtra = status === "PRESENT" && (totalPresents + 1 > (paidCycles * quota))
 
         await prisma.attendance.upsert({
             where: {

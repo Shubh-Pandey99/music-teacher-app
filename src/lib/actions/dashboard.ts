@@ -57,13 +57,16 @@ export async function getDashboardStats() {
         for (const student of allStudentsWithData) {
             // Calculate historical paid
             const totalPaid = student.payments.reduce((sum, p) => sum + Number(p.amount), 0)
+            const paidCycles = Math.floor(totalPaid / (Number(student.monthlyFee) || 1))
 
-            // Calculate cycles based on attendance
-            const progress = dateUtils.getStudentProgress(Number(student.attendance.length), Number(student.monthlyQuota))
-            const requiredCycles = Number(progress.totalCyclesStarted)
-            const totalRequired = requiredCycles * Number(student.monthlyFee)
+            // Calculate progress based on attendance and paid cycles
+            const progress = dateUtils.getStudentProgress(Number(student.attendance.length), Number(student.monthlyQuota), paidCycles)
 
-            const pending = Math.max(0, totalRequired - Number(totalPaid))
+            // Total amount they SHOULD have paid for all cycles they've entered
+            const totalRequiredCycles = Math.ceil(student.attendance.length / (student.monthlyQuota || 12))
+            const totalRequiredAmount = totalRequiredCycles * Number(student.monthlyFee)
+
+            const pending = Math.max(0, totalRequiredAmount - Number(totalPaid))
 
             if (pending > 0) {
                 totalPendingAmount = Number(totalPendingAmount) + Number(pending)
@@ -79,7 +82,7 @@ export async function getDashboardStats() {
                 id: student.id,
                 name: student.name,
                 monthlyQuota: Number(student.monthlyQuota || 12),
-                completed: Number(progress.progressInCycle)
+                completed: Number(progress.displayCount) // Shows 2/12 if paid, or 14/12 if unpaid
             })
         }
 

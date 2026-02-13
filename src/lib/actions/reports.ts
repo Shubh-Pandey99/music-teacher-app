@@ -43,12 +43,15 @@ export async function getMonthlyReport(month: number, year: number) {
             // 2. Lifetime Status (Cycle based)
             const totalPresents = student.attendance.filter(a => a.status === "PRESENT").length
             const totalPaid = student.payments.reduce((sum, p) => sum + Number(p.amount), 0)
+            const paidCycles = Math.floor(totalPaid / (Number(student.monthlyFee) || 1))
 
-            const progress = dateUtils.getStudentProgress(totalPresents, student.monthlyQuota)
-            const requiredCycles = Number(progress.totalCyclesStarted)
-            const totalRequired = requiredCycles * Number(student.monthlyFee)
+            const progress = dateUtils.getStudentProgress(totalPresents, student.monthlyQuota, paidCycles)
 
-            const pending = Math.max(0, totalRequired - totalPaid)
+            // Required cycles = how many cycles has the student entered
+            const totalRequiredCycles = Math.ceil(totalPresents / (student.monthlyQuota || 12))
+            const totalRequiredAmount = totalRequiredCycles * Number(student.monthlyFee)
+
+            const pending = Math.max(0, totalRequiredAmount - totalPaid)
 
             totalCollected += Number(paidThisMonth)
             totalPending += Number(pending)
@@ -59,11 +62,11 @@ export async function getMonthlyReport(month: number, year: number) {
                 present: Number(presentCount),
                 absent: Number(absentCount),
                 quota: Number(student.monthlyQuota || 12),
-                batchProgress: Number(progress.progressInCycle),
+                batchProgress: Number(progress.displayCount),
                 fee: Number(student.monthlyFee),
                 paid: Number(paidThisMonth),
                 pending: Number(pending),
-                status: pending === 0 ? "PAID" : totalPaid > (totalRequired - Number(student.monthlyFee)) ? "PARTIAL" : "PENDING"
+                status: pending === 0 ? "PAID" : totalPaid > (totalRequiredAmount - Number(student.monthlyFee)) ? "PARTIAL" : "PENDING"
             }
         })
 
