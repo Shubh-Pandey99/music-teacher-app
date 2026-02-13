@@ -1,11 +1,12 @@
 
-import { getStudent, deleteStudent } from "@/lib/actions/student"
+import { getStudent } from "@/lib/actions/student"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { notFound, redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Edit, Trash2, ArrowLeft } from "lucide-react"
+import { Edit, ArrowLeft } from "lucide-react"
+import { DeleteStudentButton } from "@/components/students/delete-button"
 
 export default async function StudentProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -13,12 +14,6 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
 
     if (!student) {
         notFound()
-    }
-
-    const handleDelete = async () => {
-        "use server"
-        await deleteStudent(student.id)
-        redirect("/students")
     }
 
     const schedule = student.schedules.map(s => s.day)
@@ -77,11 +72,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
                     </Link>
                 </Button>
 
-                <form action={handleDelete}>
-                    <Button variant="destructive" type="submit">
-                        <Trash2 className="mr-2 h-4 w-4" /> Delete Student
-                    </Button>
-                </form>
+                <DeleteStudentButton id={student.id} />
             </div>
         </div>
     )

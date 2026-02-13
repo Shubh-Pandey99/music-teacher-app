@@ -5,6 +5,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { BottomNav } from "@/components/bottom-nav";
 import { SideNav } from "@/components/side-nav";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,6 +31,7 @@ export default function RootLayout({
           </div>
           <BottomNav />
         </div>
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );

@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { addPayment } from "@/lib/actions/fees"
 import { useTransition } from "react"
+import { toast } from "sonner"
 
 export function AddPaymentDialog({ students }: { students: { id: string; name: string; monthlyFee: number; remaining: number }[] }) {
     const [open, setOpen] = useState(false)
@@ -36,8 +37,8 @@ export function AddPaymentDialog({ students }: { students: { id: string; name: s
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        if (selectedInfo && Number(amount) > selectedInfo.remaining) {
-            alert(`Amount cannot exceed remaining balance of ₹${selectedInfo.remaining}`)
+        if (selectedInfo && Number(amount) > (selectedInfo.remaining + 0.01)) { // Small buffer for floats
+            toast.error(`Amount cannot exceed remaining balance of ₹${selectedInfo.remaining}`)
             return
         }
         startTransition(async () => {
@@ -47,10 +48,15 @@ export function AddPaymentDialog({ students }: { students: { id: string; name: s
             formData.append("monthPaidFor", `${month}-01`)
             formData.append("notes", notes)
 
-            await addPayment(formData)
-            setOpen(false)
-            // Reset form?
-            setAmount("")
+            const result = await addPayment(formData)
+            if (result.success) {
+                toast.success("Payment recorded successfully")
+                setOpen(false)
+                setAmount("")
+                setNotes("")
+            } else {
+                toast.error(result.error || "Failed to record payment")
+            }
         })
     }
 

@@ -13,6 +13,7 @@ import { upsertAttendance } from "@/lib/actions/attendance"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { dateUtils } from "@/lib/date-utils"
+import { toast } from "sonner"
 
 type Student = {
     id: string
@@ -58,14 +59,16 @@ export function AttendanceView({ students, attendance, date, monthlyCounts = {} 
 
     const handleMark = (studentId: string, status: AttendanceStatus) => {
         if (isFuture) {
-            alert("Cannot mark attendance for future dates")
+            toast.error("Cannot mark attendance for future dates")
             return
         }
 
         startTransition(async () => {
             const result = await upsertAttendance(studentId, date, status)
             if (result && !result.success) {
-                alert(result.error || "Failed to mark attendance")
+                toast.error(result.error || "Failed to mark attendance")
+            } else {
+                toast.success(`Attendance marked as ${status.toLowerCase()}`)
             }
         })
     }

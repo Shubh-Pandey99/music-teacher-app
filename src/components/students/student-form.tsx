@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { createStudent, updateStudent } from "@/lib/actions/student"
+import { toast } from "sonner"
 
 const formSchema = z.object({
     name: z.string().min(2, {
@@ -110,6 +111,7 @@ export function StudentForm({ student, isEditing = false }: StudentFormProps) {
                 : await createStudent(formData)
 
             if (result.success) {
+                toast.success(isEditing ? "Student updated successfully" : "Student added successfully")
                 router.push("/students")
             } else {
                 if (result.validationErrors) {
@@ -119,9 +121,10 @@ export function StudentForm({ student, isEditing = false }: StudentFormProps) {
                             message: (messages as string[])[0]
                         })
                     })
-                }
-                if (result.error) {
+                    toast.error("Please check the form for errors")
+                } else if (result.error) {
                     setError(result.error)
+                    toast.error(result.error)
                 }
             }
         })
