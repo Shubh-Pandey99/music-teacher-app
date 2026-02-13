@@ -200,6 +200,22 @@ export function StudentForm({ student, isEditing = false }: StudentFormProps) {
                 />
                 <FormField
                     control={form.control}
+                    name="joiningDate"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Joining Date</FormLabel>
+                            <FormControl>
+                                <Input type="date" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                                Billing cycles will start from this day each month.
+                            </FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
                     name="scheduleDays"
                     render={() => (
                         <FormItem>

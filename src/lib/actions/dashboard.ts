@@ -3,6 +3,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
+import { dateUtils } from "@/lib/action-utils"
 
 export async function getDashboardStats() {
     const session = await auth()
@@ -41,8 +42,13 @@ export async function getDashboardStats() {
         },
     })
 
+    const windowStart = new Date(today)
+    windowStart.setDate(windowStart.getDate() - 32)
+    const windowEnd = new Date(today)
+    windowEnd.setDate(windowEnd.getDate() + 32)
+
     // 3. Pending Fees & Student Progress
-    // We fetch students with their payments and attendance for the month
+    // We fetch students with their payments and attendance for a window
     const studentsWithMonthData = await prisma.student.findMany({
         where: { teacherId: session.user.id, isActive: true },
         include: {
@@ -51,7 +57,7 @@ export async function getDashboardStats() {
             },
             attendance: {
                 where: {
-                    date: { gte: startOfMonth, lte: endOfMonth },
+                    date: { gte: windowStart, lte: windowEnd },
                     status: "PRESENT"
                 }
             }
@@ -72,11 +78,17 @@ export async function getDashboardStats() {
             studentsWithPendingFees.push({ ...student, pending: Number(pending) })
         }
 
+        const cycle = dateUtils.getStudentBillingCycle(student.joiningDate, today)
+        const completed = student.attendance.filter(a =>
+            a.date >= cycle.start &&
+            a.date <= cycle.end
+        ).length
+
         studentProgress.push({
             id: student.id,
             name: student.name,
             monthlyQuota: student.monthlyQuota || 12,
-            completed: student.attendance.length
+            completed
         })
     }
 

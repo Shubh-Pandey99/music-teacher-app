@@ -41,28 +41,29 @@ export async function getAttendanceByDate(date: Date) {
         },
     })
 
-    const startOfMonth = dateUtils.startOfMonth(date)
-    const endOfMonth = dateUtils.endOfMonth(date)
+    const windowStart = new Date(date)
+    windowStart.setDate(windowStart.getDate() - 32)
+    const windowEnd = new Date(date)
+    windowEnd.setDate(windowEnd.getDate() + 32)
 
-    const monthlyCounts = await prisma.attendance.groupBy({
-        by: ['studentId'],
-        _count: {
-            status: true,
-        },
+    const allAttendance = await prisma.attendance.findMany({
         where: {
-            student: { teacherId: session.user.id },
-            date: {
-                gte: startOfMonth,
-                lte: endOfMonth,
-            },
+            student: { teacherId: session.user.id, isActive: true },
+            date: { gte: windowStart, lte: windowEnd },
             status: "PRESENT",
         },
+        select: { studentId: true, date: true }
     })
 
-    const countsMap = monthlyCounts.reduce((acc: Record<string, number>, curr) => {
-        acc[curr.studentId] = curr._count.status
-        return acc
-    }, {} as Record<string, number>)
+    const countsMap: Record<string, number> = {}
+    students.forEach(s => {
+        const cycle = dateUtils.getStudentBillingCycle(s.joiningDate, date)
+        countsMap[s.id] = allAttendance.filter(a =>
+            a.studentId === s.id &&
+            a.date >= cycle.start &&
+            a.date <= cycle.end
+        ).length
+    })
 
     return { students, attendance, monthlyCounts: countsMap }
 }
@@ -101,15 +102,13 @@ export async function upsertAttendance(rawStudentId: string, rawDate: Date, rawS
         throw new Error("Cannot mark attendance before student joining date")
     }
 
-    const startOfMonth = dateUtils.startOfMonth(date)
-    const endOfMonth = dateUtils.endOfMonth(date)
-
+    const cycle = dateUtils.getStudentBillingCycle(student.joiningDate, normalizedDate)
     const existingCount = await prisma.attendance.count({
         where: {
             studentId,
             date: {
-                gte: startOfMonth,
-                lte: endOfMonth,
+                gte: cycle.start,
+                lte: cycle.end,
                 not: normalizedDate,
             },
             status: "PRESENT",
