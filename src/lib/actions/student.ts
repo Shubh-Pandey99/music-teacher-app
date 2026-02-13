@@ -9,11 +9,11 @@ import { z } from "zod"
 
 const StudentSchema = z.object({
     name: z.string().min(1, "Name is required"),
-    parentName: z.string().optional(),
-    phone: z.string().optional(),
+    parentName: z.string().nullable().optional(),
+    phone: z.string().nullable().optional(),
     monthlyFee: z.coerce.number().min(0, "Fee must be positive"),
     monthlyQuota: z.coerce.number().min(1).default(12),
-    joiningDate: z.string().optional(), // Will be converted to Date
+    joiningDate: z.string().nullable().optional(),
     scheduleDays: z.array(z.string()).min(1, "Select at least one day"),
 })
 

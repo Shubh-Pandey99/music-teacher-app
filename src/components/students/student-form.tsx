@@ -104,10 +104,13 @@ export function StudentForm({ student, isEditing = false }: StudentFormProps) {
                 : await createStudent(formData)
 
             if (result?.error) {
-                // If the server returns validation errors, we can handle them here.
-                // For now, we'll just log them to the console.
-                console.error("Validation errors:", result.error)
-                // You could also map these back to the form using form.setError
+                // Map server errors back to form fields
+                Object.entries(result.error).forEach(([key, messages]) => {
+                    form.setError(key as any, {
+                        type: "server",
+                        message: (messages as string[])[0]
+                    })
+                })
             }
         })
     }
