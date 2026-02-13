@@ -159,23 +159,3 @@ export async function deleteStudent(id: string) {
     await prisma.student.delete({ where: { id } })
     revalidatePath("/students")
 }
-export async function repairCorruptedData() {
-    const session = await auth()
-    if (!session?.user?.id) return { success: false }
-
-    // Fix students with massive fees (corrupted by string concatenation)
-    await prisma.student.updateMany({
-        where: {
-            teacherId: session.user.id,
-            monthlyFee: { gt: 1000000 } // Any fee > 1M is likely corrupted
-        },
-        data: {
-            monthlyFee: 1500
-        }
-    })
-
-    revalidatePath("/students")
-    revalidatePath("/reports")
-    revalidatePath("/fees")
-    return { success: true }
-}
