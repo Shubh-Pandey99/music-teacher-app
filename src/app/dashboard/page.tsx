@@ -4,6 +4,7 @@ import { Users, UserCheck, Banknote, Calendar, AlertTriangle } from "lucide-reac
 import { getDashboardStats } from "@/lib/actions/dashboard"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { RepairDataButton } from "@/components/dashboard/repair-button"
 
 export default async function DashboardPage() {
     const stats = await getDashboardStats()
@@ -160,7 +161,7 @@ export default async function DashboardPage() {
             {/* Quick Actions */}
             <div>
                 <h2 className="text-lg font-semibold mb-3">Quick Actions</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <Button asChild size="lg" className="h-20 flex flex-col gap-1">
                         <Link href="/attendance">
                             <UserCheck className="h-6 w-6" />
@@ -179,12 +180,13 @@ export default async function DashboardPage() {
                             Add Student
                         </Link>
                     </Button>
-                    <Button asChild size="lg" variant="secondary" className="h-20 flex flex-col gap-1">
+                    <Button asChild size="lg" variant="outline" className="h-20 flex flex-col gap-1">
                         <Link href="/reports">
                             <Calendar className="h-6 w-6" />
                             View Reports
                         </Link>
                     </Button>
+                    <RepairDataButton />
                 </div>
             </div>
         </div>
