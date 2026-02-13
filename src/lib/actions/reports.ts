@@ -3,6 +3,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
+import { dateUtils } from "@/lib/action-utils"
 
 export async function getMonthlyReport(month: number, year: number) {
     const session = await auth()
@@ -11,15 +12,11 @@ export async function getMonthlyReport(month: number, year: number) {
     const startOfMonth = new Date(year, month, 1)
     const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59)
 
-    const studentsWithData = await prisma.student.findMany({
+    const allStudentsWithData = await prisma.student.findMany({
         where: { teacherId: session.user.id, isActive: true },
         include: {
-            attendance: {
-                where: { date: { gte: startOfMonth, lte: endOfMonth } }
-            },
-            payments: {
-                where: { monthPaidFor: { gte: startOfMonth, lte: endOfMonth } }
-            }
+            attendance: true,
+            payments: true
         },
         orderBy: { name: "asc" },
     })
@@ -27,17 +24,31 @@ export async function getMonthlyReport(month: number, year: number) {
     let totalCollected = 0
     let totalPending = 0
 
-    const studentReports = studentsWithData.map((student) => {
-        // Attendance
-        const presentCount = student.attendance.filter(a => a.status === "PRESENT").length
-        const absentCount = student.attendance.filter(a => a.status === "ABSENT").length
+    const studentReports = allStudentsWithData.map((student) => {
+        // 1. Monthly Activity
+        const monthAttendance = student.attendance.filter(a =>
+            a.date >= startOfMonth && a.date <= endOfMonth
+        )
+        const presentCount = monthAttendance.filter(a => a.status === "PRESENT").length
+        const absentCount = monthAttendance.filter(a => a.status === "ABSENT").length
 
-        // Fees
-        const paid = student.payments.reduce((sum, p) => Number(sum) + (parseFloat(p.amount.toString()) || 0), 0)
-        const pending = Math.max(0, (parseFloat(student.monthlyFee.toString()) || 0) - paid)
+        const monthPayments = student.payments.filter(p =>
+            p.monthPaidFor >= startOfMonth && p.monthPaidFor <= endOfMonth
+        )
+        const paidThisMonth = monthPayments.reduce((sum, p) => sum + Number(p.amount), 0)
 
-        totalCollected = Number(totalCollected) + paid
-        totalPending = Number(totalPending) + pending
+        // 2. Lifetime Status (Cycle based)
+        const totalPresents = student.attendance.filter(a => a.status === "PRESENT").length
+        const totalPaid = student.payments.reduce((sum, p) => sum + Number(p.amount), 0)
+
+        const progress = dateUtils.getStudentProgress(totalPresents, student.monthlyQuota)
+        const requiredCycles = progress.totalCyclesStarted
+        const totalRequired = requiredCycles * Number(student.monthlyFee)
+
+        const pending = Math.max(0, totalRequired - totalPaid)
+
+        totalCollected += paidThisMonth
+        totalPending += pending
 
         return {
             id: student.id,
@@ -46,9 +57,9 @@ export async function getMonthlyReport(month: number, year: number) {
             absent: absentCount,
             quota: student.monthlyQuota || 12,
             fee: student.monthlyFee,
-            paid,
+            paid: paidThisMonth,
             pending,
-            status: pending === 0 ? "PAID" : paid > 0 ? "PARTIAL" : "PENDING"
+            status: pending === 0 ? "PAID" : totalPaid > (totalRequired - Number(student.monthlyFee)) ? "PARTIAL" : "PENDING"
         }
     })
 

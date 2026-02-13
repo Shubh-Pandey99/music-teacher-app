@@ -48,19 +48,11 @@ export async function getDashboardStats() {
     windowEnd.setDate(windowEnd.getDate() + 32)
 
     // 3. Pending Fees & Student Progress
-    // We fetch students with their payments and attendance for a window
-    const studentsWithMonthData = await prisma.student.findMany({
+    const allStudentsWithData = await prisma.student.findMany({
         where: { teacherId: session.user.id, isActive: true },
         include: {
-            payments: {
-                where: { monthPaidFor: { gte: startOfMonth, lte: endOfMonth } }
-            },
-            attendance: {
-                where: {
-                    date: { gte: windowStart, lte: windowEnd },
-                    status: "PRESENT"
-                }
-            }
+            payments: true,
+            attendance: { where: { status: "PRESENT" } }
         },
         orderBy: { name: "asc" }
     })
@@ -69,26 +61,27 @@ export async function getDashboardStats() {
     const studentsWithPendingFees = []
     const studentProgress = []
 
-    for (const student of studentsWithMonthData) {
-        const paid = student.payments.reduce((sum, p) => Number(sum) + (parseFloat(p.amount.toString()) || 0), 0)
-        const pending = Math.max(0, (parseFloat(student.monthlyFee.toString()) || 0) - paid)
+    for (const student of allStudentsWithData) {
+        // Calculate historical paid
+        const totalPaid = student.payments.reduce((sum, p) => sum + Number(p.amount), 0)
+
+        // Calculate cycles based on attendance
+        const progress = dateUtils.getStudentProgress(student.attendance.length, student.monthlyQuota)
+        const requiredCycles = progress.totalCyclesStarted
+        const totalRequired = requiredCycles * Number(student.monthlyFee)
+
+        const pending = Math.max(0, totalRequired - totalPaid)
 
         if (pending > 0) {
             totalPendingAmount = Number(totalPendingAmount) + Number(pending)
             studentsWithPendingFees.push({ ...student, pending: Number(pending) })
         }
 
-        const cycle = dateUtils.getStudentBillingCycle(student.joiningDate, today)
-        const completed = student.attendance.filter(a =>
-            a.date >= cycle.start &&
-            a.date <= cycle.end
-        ).length
-
         studentProgress.push({
             id: student.id,
             name: student.name,
             monthlyQuota: student.monthlyQuota || 12,
-            completed
+            completed: progress.progressInCycle
         })
     }
 
@@ -121,7 +114,7 @@ export async function getDashboardStats() {
             else break
         }
         if (consecutiveAbsents >= 3) {
-            const s = studentsWithMonthData.find(s => s.id === studentId)
+            const s = allStudentsWithData.find(s => s.id === studentId)
             if (s) absentAlerts.push({ name: s.name, count: consecutiveAbsents })
         }
     }

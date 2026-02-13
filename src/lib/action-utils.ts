@@ -53,41 +53,16 @@ export const dateUtils = {
     endOfMonth(date: Date) {
         return new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999)
     },
-    getStudentBillingCycle(joiningDate: Date, referenceDate: Date) {
-        const join = new Date(joiningDate)
-        const ref = new Date(referenceDate)
-        const joinDay = join.getDate()
+    getStudentProgress(presentsCount: number, quota: number) {
+        const q = quota || 12
+        const currentCycle = Math.floor(presentsCount / q)
+        const progressInCycle = presentsCount % q
+        const totalCyclesStarted = Math.floor(presentsCount / q) + (presentsCount % q > 0 || presentsCount === 0 ? 1 : 0)
 
-        // Calculate months since joining
-        let monthsPassed = (ref.getFullYear() - join.getFullYear()) * 12 + (ref.getMonth() - join.getMonth())
-
-        let cycleStart = new Date(join.getFullYear(), join.getMonth() + monthsPassed, joinDay)
-
-        // Handle overflow for shorter months (e.g. Jan 31 -> Feb 28)
-        if (cycleStart.getDate() !== joinDay) {
-            cycleStart = new Date(join.getFullYear(), join.getMonth() + monthsPassed + 1, 0)
+        return {
+            currentCycle,
+            progressInCycle,
+            totalCyclesStarted,
         }
-
-        // If cycleStart is after ref, we are in the previous month's cycle
-        if (cycleStart > ref) {
-            monthsPassed--
-            cycleStart = new Date(join.getFullYear(), join.getMonth() + monthsPassed, joinDay)
-            if (cycleStart.getDate() !== joinDay) {
-                cycleStart = new Date(join.getFullYear(), join.getMonth() + monthsPassed + 1, 0)
-            }
-        }
-
-        cycleStart.setHours(0, 0, 0, 0)
-
-        let nextCycleStart = new Date(join.getFullYear(), join.getMonth() + monthsPassed + 1, joinDay)
-        if (nextCycleStart.getDate() !== joinDay) {
-            nextCycleStart = new Date(join.getFullYear(), join.getMonth() + monthsPassed + 2, 0)
-        }
-
-        const cycleEnd = new Date(nextCycleStart)
-        cycleEnd.setDate(cycleEnd.getDate() - 1)
-        cycleEnd.setHours(23, 59, 59, 999)
-
-        return { start: cycleStart, end: cycleEnd }
     }
 }

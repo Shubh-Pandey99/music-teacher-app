@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/auth"
 import { z } from "zod"
+import { dateUtils } from "@/lib/action-utils"
 
 const PaymentSchema = z.object({
     studentId: z.string(),
@@ -21,35 +22,35 @@ export async function getFeeStatus(month: number, year: number) {
     const startOfMonth = new Date(year, month, 1)
     const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59)
 
-    const studentsWithPayments = await prisma.student.findMany({
+    const studentsWithData = await prisma.student.findMany({
         where: { teacherId: session.user.id, isActive: true },
         include: {
-            payments: {
-                where: {
-                    monthPaidFor: {
-                        gte: startOfMonth,
-                        lte: endOfMonth,
-                    },
-                },
-            },
+            payments: true,
+            attendance: { where: { status: "PRESENT" } }
         },
         orderBy: { name: "asc" },
     })
 
-    return studentsWithPayments.map((student) => {
-        const totalPaid = student.payments.reduce((sum, p) => Number(sum) + (parseFloat(p.amount.toString()) || 0), 0)
-        let status = "PENDING"
+    return studentsWithData.map((student) => {
+        // Calculate total historical paid
+        const totalPaid = student.payments.reduce((sum, p) => sum + Number(p.amount), 0)
 
-        if (totalPaid >= student.monthlyFee) {
-            status = "PAID"
-        } else if (totalPaid > 0) {
-            status = "PARTIAL"
+        // Calculate cycles based on attendance
+        const progress = dateUtils.getStudentProgress(student.attendance.length, student.monthlyQuota)
+        const requiredCycles = progress.totalCyclesStarted
+        const totalRequired = requiredCycles * Number(student.monthlyFee)
+
+        const remaining = Math.max(0, totalRequired - totalPaid)
+
+        let status = "PAID"
+        if (remaining > 0) {
+            status = totalPaid > (totalRequired - Number(student.monthlyFee)) ? "PARTIAL" : "PENDING"
         }
 
         return {
             ...student,
             totalPaid,
-            remaining: Math.max(0, student.monthlyFee - totalPaid),
+            remaining,
             status,
         }
     })
@@ -94,12 +95,9 @@ export async function addPayment(formData: FormData) {
         throw new Error("Cannot record payment for inactive student")
     }
 
-    const currentPaid = student.payments.reduce((sum, p) => sum + Number(p.amount), 0)
-    const remaining = Number(student.monthlyFee) - currentPaid
-
-    if (amount > remaining) {
-        throw new Error(`Payment exceeds monthly fee. Remaining: ₹${remaining}`)
-    }
+    // No strict enforcement against overpayment, as it counts as credit for next cycle.
+    // But we still do the basic validation.
+    if (amount <= 0) throw new Error("Amount must be greater than 0")
 
     await prisma.payment.create({
         data: {

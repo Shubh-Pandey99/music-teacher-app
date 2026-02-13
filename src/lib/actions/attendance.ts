@@ -41,28 +41,19 @@ export async function getAttendanceByDate(date: Date) {
         },
     })
 
-    const windowStart = new Date(date)
-    windowStart.setDate(windowStart.getDate() - 32)
-    const windowEnd = new Date(date)
-    windowEnd.setDate(windowEnd.getDate() + 32)
-
     const allAttendance = await prisma.attendance.findMany({
         where: {
             student: { teacherId: session.user.id, isActive: true },
-            date: { gte: windowStart, lte: windowEnd },
             status: "PRESENT",
         },
-        select: { studentId: true, date: true }
+        select: { studentId: true }
     })
 
     const countsMap: Record<string, number> = {}
     students.forEach(s => {
-        const cycle = dateUtils.getStudentBillingCycle(s.joiningDate, date)
-        countsMap[s.id] = allAttendance.filter(a =>
-            a.studentId === s.id &&
-            a.date >= cycle.start &&
-            a.date <= cycle.end
-        ).length
+        const studentPresents = allAttendance.filter(a => a.studentId === s.id).length
+        const progress = dateUtils.getStudentProgress(studentPresents, s.monthlyQuota)
+        countsMap[s.id] = progress.progressInCycle
     })
 
     return { students, attendance, monthlyCounts: countsMap }
@@ -102,21 +93,16 @@ export async function upsertAttendance(rawStudentId: string, rawDate: Date, rawS
         throw new Error("Cannot mark attendance before student joining date")
     }
 
-    const cycle = dateUtils.getStudentBillingCycle(student.joiningDate, normalizedDate)
     const existingCount = await prisma.attendance.count({
         where: {
             studentId,
-            date: {
-                gte: cycle.start,
-                lte: cycle.end,
-                not: normalizedDate,
-            },
             status: "PRESENT",
+            date: { not: normalizedDate }
         }
     })
 
     const quota = student.monthlyQuota || 12
-    const isExtra = status === "PRESENT" && (existingCount >= quota)
+    const isExtra = status === "PRESENT" && (existingCount % quota === 0 && existingCount > 0)
 
     await prisma.attendance.upsert({
         where: {
