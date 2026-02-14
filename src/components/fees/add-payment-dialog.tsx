@@ -37,8 +37,10 @@ export function AddPaymentDialog({ students }: { students: { id: string; name: s
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        if (selectedInfo && Number(amount) > (selectedInfo.remaining + 0.01)) { // Small buffer for floats
-            toast.error(`Amount cannot exceed remaining balance of ₹${selectedInfo.remaining}`)
+        // We support advance payments now, so we don't strictly block if amount > remaining.
+        // But we still want a sanity check for very large amounts or negative ones.
+        if (Number(amount) <= 0) {
+            toast.error("Please enter a valid amount")
             return
         }
         startTransition(async () => {
@@ -110,9 +112,18 @@ export function AddPaymentDialog({ students }: { students: { id: string; name: s
                             type="number"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
-                            max={selectedInfo?.remaining}
                             required
                         />
+                        {selectedInfo && selectedInfo.remaining <= 0 && (
+                            <div className="text-sm font-medium text-green-600 bg-green-50 p-2 rounded-md border border-green-100 mt-1">
+                                ✅ Fees already paid for this cycle.
+                            </div>
+                        )}
+                        {selectedInfo && selectedInfo.remaining > 0 && (
+                            <div className="text-sm text-yellow-600 font-medium">
+                                Pending balance: ₹{selectedInfo.remaining.toLocaleString()}
+                            </div>
+                        )}
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="notes">Notes</Label>
@@ -122,8 +133,8 @@ export function AddPaymentDialog({ students }: { students: { id: string; name: s
                             onChange={(e) => setNotes(e.target.value)}
                         />
                     </div>
-                    <Button type="submit" disabled={isPending}>
-                        {isPending ? "Saving..." : "Save Payment"}
+                    <Button type="submit" disabled={isPending} className="w-full">
+                        {isPending ? "Saving..." : (selectedInfo && selectedInfo.remaining <= 0 ? "Record Advance Payment" : "Save Payment")}
                     </Button>
                 </form>
             </DialogContent>
