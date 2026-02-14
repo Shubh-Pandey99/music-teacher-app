@@ -18,7 +18,7 @@ export const authConfig = {
                 return false // Redirect to login
             }
 
-            if ((isAuthRoute || isRootPage) && isLoggedIn) {
+            if (isAuthRoute && isLoggedIn) {
                 return Response.redirect(new URL('/dashboard', nextUrl))
             }
 

@@ -9,7 +9,7 @@ import { LogoutButton } from "./auth/logout-button"
 
 const navItems = [
     {
-        name: "Dashboard",
+        name: "Command Center",
         href: "/dashboard",
         icon: LayoutDashboard,
     },

@@ -1,22 +1,36 @@
+import { auth } from "@/auth"
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { Music, CheckCircle, Users, CreditCard } from "lucide-react"
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth()
+  const isLoggedIn = !!session?.user
+
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="px-4 lg:px-6 h-14 flex items-center border-b">
-        <Link className="flex items-center justify-center" href="/">
-          <Music className="h-6 w-6 text-blue-600 mr-2" />
-          <span className="font-bold text-xl tracking-tight">MusicPro Manager</span>
+      <header className="px-4 lg:px-6 h-16 flex items-center border-b backdrop-blur-sm sticky top-0 z-50 bg-white/80">
+        <Link className="flex items-center justify-center group" href="/">
+          <Music className="h-7 w-7 text-primary mr-2 transition-transform group-hover:scale-110" />
+          <span className="font-bold text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600">
+            MusicPro Manager
+          </span>
         </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="/login">
-            Login
-          </Link>
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="/signup">
-            Get Started
-          </Link>
+        <nav className="ml-auto flex gap-4 sm:gap-8">
+          {isLoggedIn ? (
+            <Link className="text-sm font-semibold hover:text-primary transition-colors flex items-center gap-2" href="/dashboard">
+              Dashboard <span className="text-xs bg-primary/10 px-2 py-0.5 rounded-full">Pro</span>
+            </Link>
+          ) : (
+            <>
+              <Link className="text-sm font-medium hover:text-primary transition-colors" href="/login">
+                Login
+              </Link>
+              <Link className="text-sm font-medium hover:text-primary transition-colors" href="/signup">
+                Get Started
+              </Link>
+            </>
+          )}
         </nav>
       </header>
       <main className="flex-1">
@@ -32,12 +46,25 @@ export default function Home() {
                 </p>
               </div>
               <div className="space-x-4">
-                <Link href="/signup">
-                  <Button size="lg" className="bg-blue-600 hover:bg-blue-700">Get Started Free</Button>
-                </Link>
-                <Link href="/login">
-                  <Button variant="outline" size="lg">Sign In</Button>
-                </Link>
+                {isLoggedIn ? (
+                  <div className="flex flex-col items-center gap-4">
+                    <p className="text-zinc-600 font-medium">Welcome back, {session?.user?.name || 'Teacher'}!</p>
+                    <Link href="/dashboard">
+                      <Button size="lg" className="px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all">
+                        Enter Command Center
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <>
+                    <Link href="/signup">
+                      <Button size="lg" className="bg-blue-600 hover:bg-blue-700">Get Started Free</Button>
+                    </Link>
+                    <Link href="/login">
+                      <Button variant="outline" size="lg">Sign In</Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>

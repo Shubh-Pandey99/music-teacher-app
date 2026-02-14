@@ -10,7 +10,7 @@ import { LogoutButton } from "./auth/logout-button"
 
 const navItems = [
     {
-        name: "Dashboard",
+        name: "Command Center",
         href: "/dashboard",
         icon: LayoutDashboard,
     },
@@ -43,9 +43,9 @@ export function SideNav() {
         <div className="hidden border-r bg-muted/40 md:block md:w-64 lg:w-72 h-screen sticky top-0">
             <div className="flex h-full max-h-screen flex-col gap-2">
                 <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-                    <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-                        <Music className="h-6 w-6" />
-                        <span className="">Music Teacher App</span>
+                    <Link href="/" className="flex items-center gap-2 font-semibold hover:opacity-80 transition-opacity">
+                        <Music className="h-6 w-6 text-primary" />
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600">MusicPro Manager</span>
                     </Link>
                 </div>
                 <div className="flex-1">

@@ -13,7 +13,9 @@ export default async function DashboardPage() {
 
     return (
         <div className="space-y-6 pb-20">
-            <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+            <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+                Command Center
+            </h1>
 
             {/* Summary Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
