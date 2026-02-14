@@ -19,33 +19,6 @@ const upsertAttendanceSchema = z.object({
 
 import { dateUtils, getAuthorizedSession, type ActionResponse } from "@/lib/action-utils"
 
-export async function bulkMarkPresent(studentIds: string[], date: Date): Promise<ActionResponse> {
-    try {
-        const session = await getAuthorizedSession()
-        const normalizedDate = dateUtils.startOfDay(date)
-        const today = dateUtils.startOfDay(new Date())
-
-        if (normalizedDate > today) {
-            return { success: false, error: "Cannot mark attendance for future dates" }
-        }
-
-        // Parallel execution for individual status checks (isExtra etc)
-        const results = await Promise.all(studentIds.map(id => upsertAttendance(id, date, "PRESENT")));
-        const failures = results.filter(r => !r.success);
-
-        revalidatePath("/attendance")
-        revalidatePath("/dashboard")
-
-        if (failures.length > 0) {
-            return { success: false, error: `Failed to mark ${failures.length} students` }
-        }
-
-        return { success: true }
-    } catch (error: any) {
-        console.error("Bulk Attendance Error:", error)
-        return { success: false, error: error.message || "Something went wrong" }
-    }
-}
 
 export async function getAttendanceByDate(date: Date) {
     try {
