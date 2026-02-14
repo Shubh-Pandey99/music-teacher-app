@@ -17,7 +17,7 @@ export function NavigationWrapper({ children }: { children: React.ReactNode }) {
                 "flex flex-col w-full",
                 !isPublicPage && "pb-20 md:pb-0"
             )}>
-                <main className="flex-1 overflow-y-auto">
+                <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
                     {children}
                 </main>
             </div>
