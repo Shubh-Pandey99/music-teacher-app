@@ -17,11 +17,7 @@ export default async function Home() {
           </span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-8">
-          {isLoggedIn ? (
-            <Link className="text-sm font-semibold hover:text-primary transition-colors flex items-center gap-2" href="/dashboard">
-              Dashboard <span className="text-xs bg-primary/10 px-2 py-0.5 rounded-full">Pro</span>
-            </Link>
-          ) : (
+          {!isLoggedIn ? (
             <>
               <Link className="text-sm font-medium hover:text-primary transition-colors" href="/login">
                 Login
@@ -30,6 +26,10 @@ export default async function Home() {
                 Get Started
               </Link>
             </>
+          ) : (
+            <Link className="text-sm font-medium hover:text-primary transition-colors" href="/login">
+              Logout
+            </Link>
           )}
         </nav>
       </header>
@@ -51,7 +51,7 @@ export default async function Home() {
                     <p className="text-zinc-600 font-medium">Welcome back, {session?.user?.name || 'Teacher'}!</p>
                     <Link href="/dashboard">
                       <Button size="lg" className="px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all">
-                        Enter Command Center
+                        Open Dashboard
                       </Button>
                     </Link>
                   </div>
