@@ -5,12 +5,12 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { signIn } from "next-auth/react"
 import { toast } from "sonner"
-import { Loader2 } from "lucide-react"
+import { Loader2, Music, CheckCircle2, Calendar, Users, CreditCard, BarChart3 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false)
@@ -34,9 +34,9 @@ export default function LoginPage() {
             if (result?.error) {
                 toast.error("Invalid email or password")
             } else {
-                toast.success("Logged in successfully")
+                toast.success("Welcome back!")
                 router.push("/dashboard")
-                router.refresh() // Force a refresh to update the layout/sidebar
+                router.refresh()
             }
         } catch (error) {
             toast.error("An error occurred during login")
@@ -45,40 +45,134 @@ export default function LoginPage() {
         }
     }
 
+    const features = [
+        { icon: Calendar, text: "Seamless Attendance Tracking" },
+        { icon: Users, text: "Centralized Student Management" },
+        { icon: CreditCard, text: "Automated Fee Collection" },
+        { icon: BarChart3, text: "Comprehensive Progress Reports" },
+    ]
+
     return (
-        <div className="flex h-screen w-full items-center justify-center bg-muted/40 px-4">
-            <Card className="w-full max-w-sm">
-                <CardHeader>
-                    <CardTitle className="text-2xl">Login</CardTitle>
-                    <CardDescription>
-                        Enter your email below to login to your account.
-                    </CardDescription>
-                </CardHeader>
-                <form onSubmit={handleSubmit}>
-                    <CardContent className="grid gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+        <div className="flex min-h-screen w-full font-sans">
+            {/* Left Side: Product Overview & Branding */}
+            <div className="hidden lg:flex lg:w-1/2 bg-slate-950 text-white p-12 flex-col justify-between relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-blue-900/20 pointer-events-none" />
+                <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]" />
+
+                <div className="relative z-10">
+                    <Link href="/" className="flex items-center gap-2 group mb-12">
+                        <div className="bg-primary p-2 rounded-xl transition-transform group-hover:scale-110">
+                            <Music className="h-6 w-6 text-white" />
                         </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">Password</Label>
-                            <Input id="password" name="password" type="password" required />
+                        <span className="font-bold text-2xl tracking-tight">MusicPro Manager</span>
+                    </Link>
+
+                    <div className="space-y-6 max-w-md">
+                        <h1 className="text-4xl xl:text-5xl font-extrabold leading-tight tracking-tight">
+                            Elevate your <span className="text-primary italic">musical</span> teaching journey.
+                        </h1>
+                        <p className="text-slate-400 text-lg">
+                            The all-in-one workstation for independent music teachers and academies to manage students, track progress, and grow their passion.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="relative z-10 space-y-8">
+                    <div className="grid grid-cols-1 gap-4">
+                        {features.map((feature, i) => (
+                            <div key={i} className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                                <feature.icon className="h-5 w-5 text-primary" />
+                                <span className="text-sm font-medium text-slate-200">{feature.text}</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="pt-8 border-t border-white/10">
+                        <blockquote className="space-y-2">
+                            <p className="text-slate-300 text-sm italic italic">
+                                "MusicPro Manager helped me more than double my students while spending 70% less time on administration. It's a game-changer."
+                            </p>
+                            <footer className="text-white font-semibold text-sm">— Sarah Chen, Piano Instructor</footer>
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+
+            {/* Right Side: Login Form */}
+            <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 md:p-24 bg-white dark:bg-slate-950">
+                <div className="w-full max-w-sm space-y-8">
+                    <div className="lg:hidden flex flex-col items-center mb-12">
+                        <Music className="h-10 w-10 text-primary mb-2" />
+                        <h2 className="text-2xl font-bold italic tracking-tight">MusicPro Manager</h2>
+                    </div>
+
+                    <div className="text-left space-y-2">
+                        <h2 className="text-3xl font-bold tracking-tight">Welcome Back</h2>
+                        <p className="text-muted-foreground">Sign in to manage your studio</p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="space-y-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="email" className="text-sm font-semibold">Email Address</Label>
+                                <Input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    placeholder="name@studio.com"
+                                    required
+                                    className="h-12 border-slate-200 focus:ring-2 focus:ring-primary/20 transition-all rounded-xl"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <div className="flex items-center justify-between">
+                                    <Label htmlFor="password">Password</Label>
+                                    <Link href="#" className="text-xs text-primary hover:underline font-medium">Forgot password?</Link>
+                                </div>
+                                <Input
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    required
+                                    className="h-12 border-slate-200 focus:ring-2 focus:ring-primary/20 transition-all rounded-xl"
+                                />
+                            </div>
                         </div>
-                    </CardContent>
-                    <CardFooter className="flex flex-col gap-4 pt-2">
-                        <Button className="w-full" disabled={loading}>
-                            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Sign in
+
+                        <Button
+                            className="w-full h-12 rounded-xl text-base font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    Signing in...
+                                </>
+                            ) : "Sign In"}
                         </Button>
-                        <div className="text-sm text-center">
-                            Don&apos;t have an account?{" "}
-                            <Link href="/signup" className="text-blue-600 hover:underline">
-                                Sign up
-                            </Link>
+                    </form>
+
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-slate-100" />
                         </div>
-                    </CardFooter>
-                </form>
-            </Card>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-white dark:bg-slate-950 px-2 text-muted-foreground font-medium">New here?</span>
+                        </div>
+                    </div>
+
+                    <p className="text-center text-sm text-slate-500">
+                        Join 2,000+ music teachers and academies.{" "}
+                        <Link href="/signup" className="text-primary font-bold hover:underline transition-colors decoration-2 underline-offset-4">
+                            Create a free account
+                        </Link>
+                    </p>
+                </div>
+
+                <footer className="mt-auto pt-12 text-center text-xs text-slate-400">
+                    &copy; 2024 MusicPro Manager. All rights reserved.
+                </footer>
+            </div>
         </div>
     )
 }
