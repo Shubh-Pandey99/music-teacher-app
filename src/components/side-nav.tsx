@@ -3,7 +3,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Users, CalendarCheck, Banknote, BarChart3, Music } from "lucide-react"
+import { LayoutDashboard, Users, CalendarCheck, Banknote, BarChart3, GraduationCap } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { LogoutButton } from "./auth/logout-button"
 
@@ -43,10 +43,10 @@ export function SideNav() {
         <div className="hidden border-r bg-muted/40 md:block md:w-64 lg:w-72 h-screen sticky top-0">
             <div className="flex h-full max-h-screen flex-col gap-2">
                 <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-                    <Link href="/" className="flex items-center gap-2 font-semibold hover:opacity-80 transition-opacity">
-                        <Music className="h-6 w-6 text-primary" />
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600">MusicPro Manager</span>
-                    </Link>
+                    <div className="flex items-center gap-2 font-semibold">
+                        <GraduationCap className="h-6 w-6 text-primary" />
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600">TeacherPro Manager</span>
+                    </div>
                 </div>
                 <div className="flex-1">
                     <nav className="grid items-start px-2 text-sm font-medium lg:px-4">

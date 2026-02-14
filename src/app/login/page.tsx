@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { signIn } from "next-auth/react"
 import { toast } from "sonner"
-import { Loader2, Music, CheckCircle2, Calendar, Users, CreditCard, BarChart3 } from "lucide-react"
+import { Loader2, GraduationCap, CheckCircle2, Calendar, Users, CreditCard, BarChart3 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export default function LoginPage() {
@@ -60,19 +60,19 @@ export default function LoginPage() {
                 <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]" />
 
                 <div className="relative z-10">
-                    <Link href="/" className="flex items-center gap-2 group mb-12">
-                        <div className="bg-primary p-2 rounded-xl transition-transform group-hover:scale-110">
-                            <Music className="h-6 w-6 text-white" />
+                    <div className="flex items-center gap-2 mb-12">
+                        <div className="bg-primary p-2 rounded-xl">
+                            <GraduationCap className="h-6 w-6 text-white" />
                         </div>
-                        <span className="font-bold text-2xl tracking-tight">MusicPro Manager</span>
-                    </Link>
+                        <span className="font-bold text-2xl tracking-tight">TeacherPro Manager</span>
+                    </div>
 
                     <div className="space-y-6 max-w-md">
                         <h1 className="text-4xl xl:text-5xl font-extrabold leading-tight tracking-tight">
-                            Elevate your <span className="text-primary italic">musical</span> teaching journey.
+                            Elevate your <span className="text-primary italic">professional</span> teaching journey.
                         </h1>
                         <p className="text-slate-400 text-lg">
-                            The all-in-one workstation for independent music teachers and academies to manage students, track progress, and grow their passion.
+                            The all-in-one workstation for independent teachers and academies to manage students, track progress, and grow their passion.
                         </p>
                     </div>
                 </div>
@@ -90,9 +90,9 @@ export default function LoginPage() {
                     <div className="pt-8 border-t border-white/10">
                         <blockquote className="space-y-2">
                             <p className="text-slate-300 text-sm italic italic">
-                                "MusicPro Manager helped me more than double my students while spending 70% less time on administration. It's a game-changer."
+                                "TeacherPro Manager helped me more than double my students while spending 70% less time on administration. It's a game-changer."
                             </p>
-                            <footer className="text-white font-semibold text-sm">— Sarah Chen, Piano Instructor</footer>
+                            <footer className="text-white font-semibold text-sm">— Sarah Chen, Professional Instructor</footer>
                         </blockquote>
                     </div>
                 </div>
@@ -102,8 +102,8 @@ export default function LoginPage() {
             <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 md:p-24 bg-white dark:bg-slate-950">
                 <div className="w-full max-w-sm space-y-8">
                     <div className="lg:hidden flex flex-col items-center mb-12">
-                        <Music className="h-10 w-10 text-primary mb-2" />
-                        <h2 className="text-2xl font-bold italic tracking-tight">MusicPro Manager</h2>
+                        <GraduationCap className="h-10 w-10 text-primary mb-2" />
+                        <h2 className="text-2xl font-bold italic tracking-tight">TeacherPro Manager</h2>
                     </div>
 
                     <div className="text-left space-y-2">
@@ -162,7 +162,7 @@ export default function LoginPage() {
                     </div>
 
                     <p className="text-center text-sm text-slate-500">
-                        Join 2,000+ music teachers and academies.{" "}
+                        Join 2,000+ teachers and academies.{" "}
                         <Link href="/signup" className="text-primary font-bold hover:underline transition-colors decoration-2 underline-offset-4">
                             Create a free account
                         </Link>
@@ -170,7 +170,7 @@ export default function LoginPage() {
                 </div>
 
                 <footer className="mt-auto pt-12 text-center text-xs text-slate-400">
-                    &copy; 2024 MusicPro Manager. All rights reserved.
+                    &copy; 2026 TeacherPro Manager. All rights reserved.
                 </footer>
             </div>
         </div>

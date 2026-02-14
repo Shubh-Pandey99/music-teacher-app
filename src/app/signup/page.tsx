@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { signup } from "@/lib/actions/auth"
-import { AlertCircle, Loader2, Music, Sparkles, CheckCircle2, Rocket, ShieldCheck, Zap } from "lucide-react"
+import { AlertCircle, Loader2, GraduationCap, Sparkles, CheckCircle2, Rocket, ShieldCheck, Zap } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -55,12 +55,12 @@ export default function SignupPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/80 to-transparent" />
 
                 <div className="relative z-10">
-                    <Link href="/" className="flex items-center gap-2 group mb-12">
-                        <div className="bg-white p-2 rounded-xl transition-transform group-hover:scale-110">
-                            <Music className="h-6 w-6 text-primary" />
+                    <div className="flex items-center gap-2 mb-12">
+                        <div className="bg-white p-2 rounded-xl">
+                            <GraduationCap className="h-6 w-6 text-primary" />
                         </div>
-                        <span className="font-bold text-2xl tracking-tight text-white">MusicPro Manager</span>
-                    </Link>
+                        <span className="font-bold text-2xl tracking-tight text-white">TeacherPro Manager</span>
+                    </div>
 
                     <div className="space-y-6">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-bold uppercase tracking-wider text-white">
@@ -68,7 +68,7 @@ export default function SignupPage() {
                             New: Automated Progress Reports
                         </div>
                         <h1 className="text-4xl xl:text-5xl font-extrabold leading-tight tracking-tight text-white">
-                            Join the global community of <span className="text-yellow-300">pro</span> music teachers.
+                            Join the global community of <span className="text-yellow-300">pro</span> teachers.
                         </h1>
                     </div>
                 </div>
@@ -174,7 +174,7 @@ export default function SignupPage() {
 
                     <div className="pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
                         <p className="text-sm text-slate-500 font-medium">
-                            Already using MusicPro Manager?{" "}
+                            Already using TeacherPro Manager?{" "}
                             <Link href="/login" className="text-primary font-bold hover:underline transition-colors decoration-2 underline-offset-4">
                                 Sign in here
                             </Link>
@@ -184,7 +184,7 @@ export default function SignupPage() {
 
                 <div className="mt-8 flex items-center gap-6 text-slate-300 grayscale opacity-50">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trusted by</span>
-                    <Music className="h-5 w-5" />
+                    <GraduationCap className="h-5 w-5" />
                     <Sparkles className="h-5 w-5" />
                     <Rocket className="h-5 w-5" />
                 </div>

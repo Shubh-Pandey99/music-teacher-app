@@ -9,8 +9,8 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Music Teacher App",
-  description: "Attendance and Fee Management",
+  title: "TeacherPro Manager",
+  description: "Attendance and Fee Management for Professionals",
 };
 
 export default function RootLayout({

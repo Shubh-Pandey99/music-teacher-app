@@ -1,7 +1,7 @@
 import { auth } from "@/auth"
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
-import { Music, CheckCircle, Users, CreditCard } from "lucide-react"
+import { GraduationCap, CheckCircle, Users, CreditCard } from "lucide-react"
 import { LogoutButton } from "@/components/auth/logout-button"
 
 export default async function Home() {
@@ -11,12 +11,12 @@ export default async function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <header className="px-4 lg:px-6 h-16 flex items-center border-b backdrop-blur-sm sticky top-0 z-50 bg-white/80">
-        <Link className="flex items-center justify-center group" href="/">
-          <Music className="h-7 w-7 text-primary mr-2 transition-transform group-hover:scale-110" />
+        <div className="flex items-center justify-center group cursor-default">
+          <GraduationCap className="h-7 w-7 text-primary mr-2 transition-transform group-hover:scale-110" />
           <span className="font-bold text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600">
-            MusicPro Manager
+            TeacherPro Manager
           </span>
-        </Link>
+        </div>
         <nav className="ml-auto flex gap-4 sm:gap-8">
           {!isLoggedIn ? (
             <>
@@ -38,7 +38,7 @@ export default async function Home() {
             <div className="flex flex-col items-center space-y-4 text-center">
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
-                  The All-in-One Platform for Music Teachers
+                  The All-in-One Platform for Teachers
                 </h1>
                 <p className="mx-auto max-w-[700px] text-zinc-500 md:text-xl dark:text-zinc-400">
                   Manage students, track attendance, and collect fees with ease. Focus on teaching, we&apos;ll handle the rest.
@@ -97,7 +97,7 @@ export default async function Home() {
         </section>
       </main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-zinc-500">© 2026 MusicPro Manager. All rights reserved.</p>
+        <p className="text-xs text-zinc-500">© 2026 TeacherPro Manager. All rights reserved.</p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link className="text-xs hover:underline underline-offset-4" href="#">
             Terms of Service
