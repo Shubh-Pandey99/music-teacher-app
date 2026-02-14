@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { LayoutDashboard, Users, CalendarCheck, Banknote, BarChart3 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { LogoutButton } from "./auth/logout-button"
 
 const navItems = [
     {
@@ -58,6 +59,10 @@ export function BottomNav() {
                         </Link>
                     )
                 })}
+                <div className="flex flex-col items-center justify-center w-full h-full space-y-1 text-xs font-medium text-muted-foreground transition-colors hover:text-destructive">
+                    <LogoutButton hideText className="h-full w-full flex-col p-0 gap-1 bg-transparent hover:bg-transparent" />
+                    <span className="text-[10px]">Logout</span>
+                </div>
             </nav>
         </div>
     )

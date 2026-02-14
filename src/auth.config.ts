@@ -11,13 +11,14 @@ export const authConfig = {
             const protectedRoutes = ['/dashboard', '/attendance', '/students', '/fees', '/reports']
             const isProtectedRoute = protectedRoutes.some(route => nextUrl.pathname.startsWith(route))
             const isAuthRoute = nextUrl.pathname.startsWith('/login') || nextUrl.pathname.startsWith('/signup')
+            const isRootPage = nextUrl.pathname === '/'
 
             if (isProtectedRoute) {
                 if (isLoggedIn) return true
                 return false // Redirect to login
             }
 
-            if (isAuthRoute && isLoggedIn) {
+            if ((isAuthRoute || isRootPage) && isLoggedIn) {
                 return Response.redirect(new URL('/dashboard', nextUrl))
             }
 

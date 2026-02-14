@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { LayoutDashboard, Users, CalendarCheck, Banknote, BarChart3, Music } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { LogoutButton } from "./auth/logout-button"
 
 
 const navItems = [
@@ -69,8 +70,8 @@ export function SideNav() {
                         })}
                     </nav>
                 </div>
-                <div className="mt-auto p-4">
-                    {/* Future: User profile / logout */}
+                <div className="mt-auto p-4 border-t">
+                    <LogoutButton />
                 </div>
             </div>
         </div>
