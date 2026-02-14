@@ -15,7 +15,7 @@ export default async function DashboardPage() {
         <div className="space-y-8 pb-20 max-w-7xl mx-auto">
             <div className="flex flex-col gap-1">
                 <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                    Command Center
+                    Dashboard
                 </h1>
                 <p className="text-slate-500 font-medium">Monitoring your studio's pulse and performance.</p>
             </div>
