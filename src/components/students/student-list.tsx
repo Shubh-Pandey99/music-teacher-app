@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Phone, Calendar, MessageCircle } from "lucide-react"
 import { getStudents } from "@/lib/actions/student"
+import { WhatsAppButton } from "./whatsapp-button"
 
 interface Student {
     id: string
@@ -55,22 +56,7 @@ export async function StudentList({ query, sort }: { query?: string; sort?: stri
                                         <span className="truncate">{student.phone || "No phone"}</span>
                                     </div>
                                     {student.phone && (
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50 shrink-0"
-                                            asChild
-                                        >
-                                            <div
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    window.open(`https://wa.me/91${student.phone?.replace(/\D/g, '')}`, '_blank');
-                                                }}
-                                            >
-                                                <MessageCircle className="h-4 w-4" />
-                                            </div>
-                                        </Button>
+                                        <WhatsAppButton phone={student.phone} />
                                     )}
                                 </div>
                                 <div className="flex items-center gap-2 text-muted-foreground">
