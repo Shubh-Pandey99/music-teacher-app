@@ -20,19 +20,22 @@ interface LogoutButtonProps {
     className?: string
     variant?: "default" | "outline" | "ghost" | "secondary" | "destructive" | "link"
     hideText?: boolean
+    children?: React.ReactNode
 }
 
-export function LogoutButton({ className, variant = "ghost", hideText = false }: LogoutButtonProps) {
+export function LogoutButton({ className, variant = "ghost", hideText = false, children }: LogoutButtonProps) {
     return (
         <AlertDialog>
             <AlertDialogTrigger asChild>
-                <Button
-                    variant={variant}
-                    className={cn("flex items-center gap-3 w-full justify-start", className)}
-                >
-                    <LogOut className="h-4 w-4" />
-                    {!hideText && <span>Logout</span>}
-                </Button>
+                {children ? children : (
+                    <Button
+                        variant={variant}
+                        className={cn("flex items-center gap-3 w-full justify-start", className)}
+                    >
+                        <LogOut className="h-4 w-4" />
+                        {!hideText && <span>Logout</span>}
+                    </Button>
+                )}
             </AlertDialogTrigger>
             <AlertDialogContent>
                 <AlertDialogHeader>

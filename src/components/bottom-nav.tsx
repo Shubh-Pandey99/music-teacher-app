@@ -3,13 +3,13 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Users, CalendarCheck, Banknote, BarChart3 } from "lucide-react"
+import { LayoutDashboard, Users, CalendarCheck, Banknote, BarChart3, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { LogoutButton } from "./auth/logout-button"
 
 const navItems = [
     {
-        name: "Command Center",
+        name: "Home",
         href: "/dashboard",
         icon: LayoutDashboard,
     },
@@ -67,10 +67,14 @@ export function BottomNav() {
                         </Link>
                     )
                 })}
-                <div className="flex flex-col items-center justify-center w-full h-full space-y-1 text-xs font-medium text-muted-foreground transition-colors hover:text-destructive">
-                    <LogoutButton hideText className="h-full w-full flex-col p-0 gap-1 bg-transparent hover:bg-transparent" />
-                    <span className="text-[10px]">Logout</span>
-                </div>
+                <LogoutButton>
+                    <button className="flex flex-col items-center justify-center w-full h-full space-y-1 text-[10px] font-medium text-muted-foreground transition-all duration-300 hover:text-destructive">
+                        <div className="p-1 rounded-full">
+                            <LogOut className="h-5 w-5" />
+                        </div>
+                        <span>Logout</span>
+                    </button>
+                </LogoutButton>
             </nav>
         </div>
     )
