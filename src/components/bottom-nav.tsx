@@ -48,14 +48,22 @@ export function BottomNav() {
                             key={item.href}
                             href={item.href}
                             className={cn(
-                                "flex flex-col items-center justify-center w-full h-full space-y-1 text-xs font-medium transition-colors",
+                                "flex flex-col items-center justify-center w-full h-full space-y-1 text-[10px] font-medium transition-all duration-300 relative",
                                 isActive
-                                    ? "text-primary"
-                                    : "text-muted-foreground hover:text-primary/80"
+                                    ? "text-primary scale-110"
+                                    : "text-muted-foreground hover:text-primary/70"
                             )}
                         >
-                            <item.icon className={cn("h-6 w-6", isActive && "fill-current")} />
-                            <span>{item.name}</span>
+                            <div className={cn(
+                                "p-1 rounded-full transition-all duration-300",
+                                isActive ? "bg-primary/10 shadow-inner" : ""
+                            )}>
+                                <item.icon className={cn("h-5 w-5", isActive && "fill-primary/20")} />
+                            </div>
+                            <span className={cn(isActive && "font-bold")}>{item.name}</span>
+                            {isActive && (
+                                <div className="absolute top-0 w-8 h-1 bg-primary rounded-b-full shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
+                            )}
                         </Link>
                     )
                 })}

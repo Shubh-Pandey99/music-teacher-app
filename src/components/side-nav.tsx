@@ -57,14 +57,23 @@ export function SideNav() {
                                     key={item.href}
                                     href={item.href}
                                     className={cn(
-                                        "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary",
+                                        "group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 relative",
                                         isActive
-                                            ? "bg-muted text-primary"
-                                            : "text-muted-foreground"
+                                            ? "bg-primary/10 text-primary shadow-sm"
+                                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
                                     )}
                                 >
-                                    <item.icon className="h-4 w-4" />
-                                    {item.name}
+                                    {isActive && (
+                                        <div className="absolute left-0 w-1 h-6 bg-primary rounded-r-full" />
+                                    )}
+                                    <item.icon className={cn(
+                                        "h-5 w-5 transition-transform duration-200 group-hover:scale-110",
+                                        isActive ? "text-primary" : "text-muted-foreground"
+                                    )} />
+                                    <span>{item.name}</span>
+                                    {isActive && (
+                                        <div className="absolute inset-0 bg-primary/5 rounded-xl blur-lg -z-10" />
+                                    )}
                                 </Link>
                             )
                         })}

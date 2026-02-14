@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Check, X, User } from "lucide-react"
-import { upsertAttendance } from "@/lib/actions/attendance"
+import { Check, X, User, MessageCircle, CheckCircle2 } from "lucide-react"
+import { upsertAttendance, bulkMarkPresent } from "@/lib/actions/attendance"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { dateUtils } from "@/lib/date-utils"
@@ -21,6 +21,7 @@ type Student = {
     schedules: { day: string }[]
     isActive: boolean
     monthlyQuota?: number
+    phone?: string | null
 }
 
 type AttendanceRecord = {
@@ -73,6 +74,26 @@ export function AttendanceView({ students, attendance, date, monthlyCounts = {} 
         })
     }
 
+    const handleBulkMark = () => {
+        const unMarkedScheduledIds = scheduledStudents
+            .filter(s => !getStatus(s.id))
+            .map(s => s.id)
+
+        if (unMarkedScheduledIds.length === 0) {
+            toast.info("All scheduled students already marked")
+            return
+        }
+
+        startTransition(async () => {
+            const result = await bulkMarkPresent(unMarkedScheduledIds, date)
+            if (result.success) {
+                toast.success(`Marked ${unMarkedScheduledIds.length} students as present`)
+            } else {
+                toast.error(result.error || "Failed to bulk mark attendance")
+            }
+        })
+    }
+
 
 
     return (
@@ -100,7 +121,20 @@ export function AttendanceView({ students, attendance, date, monthlyCounts = {} 
                             {scheduledStudents.length} scheduled, {otherStudents.length} others
                         </p>
                     </div>
-
+                    <div className="flex items-center gap-2">
+                        {!isFuture && scheduledStudents.some(s => !getStatus(s.id)) && (
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 border-green-200 text-green-700 hover:bg-green-50 animate-in fade-in slide-in-from-right-2"
+                                onClick={handleBulkMark}
+                                disabled={isPending}
+                            >
+                                <CheckCircle2 className="mr-2 h-4 w-4" />
+                                Mark All Scheduled
+                            </Button>
+                        )}
+                    </div>
                 </div>
 
                 <div className="space-y-2">
@@ -198,6 +232,23 @@ function StudentAttendanceCard({
                         </span>
                     </div>
                 </div>
+                {student.phone && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                        asChild
+                    >
+                        <a
+                            href={`https://wa.me/91${student.phone.replace(/\D/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <MessageCircle className="h-4 w-4" />
+                        </a>
+                    </Button>
+                )}
             </div>
 
             <div className="flex items-center gap-1 shrink-0">

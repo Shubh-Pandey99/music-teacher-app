@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Phone, Calendar } from "lucide-react"
+import { Phone, Calendar, MessageCircle } from "lucide-react"
 import { getStudents } from "@/lib/actions/student"
 
 interface Student {
@@ -48,14 +48,34 @@ export async function StudentList({ query, sort }: { query?: string; sort?: stri
                                     {student.parentName && `Parent: ${student.parentName}`}
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="pb-2 text-sm space-y-1">
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <Phone className="h-3 w-3" />
-                                    <span>{student.phone || "No phone"}</span>
+                            <CardContent className="pb-4 text-sm space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2 text-muted-foreground min-w-0">
+                                        <Phone className="h-3.5 w-3.5 shrink-0" />
+                                        <span className="truncate">{student.phone || "No phone"}</span>
+                                    </div>
+                                    {student.phone && (
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50 shrink-0"
+                                            asChild
+                                        >
+                                            <div
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    window.open(`https://wa.me/91${student.phone?.replace(/\D/g, '')}`, '_blank');
+                                                }}
+                                            >
+                                                <MessageCircle className="h-4 w-4" />
+                                            </div>
+                                        </Button>
+                                    )}
                                 </div>
                                 <div className="flex items-center gap-2 text-muted-foreground">
-                                    <Calendar className="h-3 w-3" />
-                                    <span>{scheduleDaysArr.join(", ")}</span>
+                                    <Calendar className="h-3.5 w-3.5 shrink-0" />
+                                    <span className="truncate">{scheduleDaysArr.join(", ")}</span>
                                 </div>
                             </CardContent>
                         </Card>
