@@ -2,6 +2,7 @@ import { auth } from "@/auth"
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { Music, CheckCircle, Users, CreditCard } from "lucide-react"
+import { LogoutButton } from "@/components/auth/logout-button"
 
 export default async function Home() {
   const session = await auth()
@@ -27,9 +28,7 @@ export default async function Home() {
               </Link>
             </>
           ) : (
-            <Link className="text-sm font-medium hover:text-primary transition-colors" href="/login">
-              Logout
-            </Link>
+            <LogoutButton variant="ghost" className="text-sm font-medium w-auto h-auto p-0 hover:bg-transparent" />
           )}
         </nav>
       </header>
