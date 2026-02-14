@@ -128,3 +128,58 @@ export async function addPayment(formData: FormData): Promise<ActionResponse> {
         return { success: false, error: error.message || "Failed to add payment" }
     }
 }
+
+export async function getRecentPayments(limit = 10) {
+    try {
+        const session = await auth()
+        if (!session?.user?.id) return []
+
+        return await prisma.payment.findMany({
+            where: {
+                student: {
+                    teacherId: session.user.id
+                }
+            },
+            include: {
+                student: {
+                    select: {
+                        name: true
+                    }
+                }
+            },
+            orderBy: {
+                date: "desc"
+            },
+            take: limit
+        })
+    } catch (error) {
+        console.error("getRecentPayments Error:", error)
+        return []
+    }
+}
+
+export async function deletePayment(paymentId: string): Promise<ActionResponse> {
+    try {
+        const session = await getAuthorizedSession()
+
+        const payment = await prisma.payment.findUnique({
+            where: { id: paymentId },
+            include: { student: true }
+        })
+
+        if (!payment || payment.student.teacherId !== session.user.id) {
+            return { success: false, error: "Unauthorized or Payment not found" }
+        }
+
+        await prisma.payment.delete({
+            where: { id: paymentId }
+        })
+
+        revalidatePath("/fees")
+        revalidatePath("/dashboard")
+        return { success: true }
+    } catch (error: any) {
+        console.error("deletePayment Error:", error)
+        return { success: false, error: error.message || "Failed to delete payment" }
+    }
+}
