@@ -106,9 +106,17 @@ export default function SignupPage() {
 
             {/* Right Side: Signup Form */}
             <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 md:p-24 bg-slate-50 dark:bg-slate-950">
+                <div className="lg:hidden flex flex-col items-center mb-10 text-center">
+                    <div className="bg-primary p-3 rounded-2xl mb-4 shadow-lg shadow-primary/20">
+                        <GraduationCap className="h-8 w-8 text-white" />
+                    </div>
+                    <h2 className="text-3xl font-extrabold tracking-tight">TeacherPro Manager</h2>
+                    <p className="text-slate-500 mt-2">The #1 Choice for modern educators.</p>
+                </div>
+
                 <div className="w-full max-w-md space-y-8 bg-white dark:bg-slate-900 p-8 sm:p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800">
                     <div className="text-center space-y-2">
-                        <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Create your account</h2>
+                        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Create your account</h2>
                         <p className="text-slate-500 font-medium">Start your 14-day free trial today.</p>
                     </div>
 

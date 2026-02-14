@@ -101,14 +101,30 @@ export default function LoginPage() {
             {/* Right Side: Login Form */}
             <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 md:p-24 bg-white dark:bg-slate-950">
                 <div className="w-full max-w-sm space-y-8">
-                    <div className="lg:hidden flex flex-col items-center mb-12">
-                        <GraduationCap className="h-10 w-10 text-primary mb-2" />
-                        <h2 className="text-2xl font-bold italic tracking-tight">TeacherPro Manager</h2>
+                    <div className="lg:hidden flex flex-col items-center mb-8 text-center">
+                        <div className="bg-primary p-3 rounded-2xl mb-4 shadow-lg shadow-primary/20">
+                            <GraduationCap className="h-8 w-8 text-white" />
+                        </div>
+                        <h2 className="text-3xl font-extrabold tracking-tight">TeacherPro Manager</h2>
+                        <p className="text-muted-foreground mt-2 max-w-[280px]">Manage your studio with total professional control.</p>
+
+                        {/* Mobile Feature Pills */}
+                        <div className="flex flex-wrap justify-center gap-2 mt-6">
+                            {['Attendance', 'Fees', 'Stats'].map((f) => (
+                                <span key={f} className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                    {f}
+                                </span>
+                            ))}
+                        </div>
                     </div>
 
-                    <div className="text-left space-y-2">
+                    <div className="text-left space-y-2 lg:block hidden">
                         <h2 className="text-3xl font-bold tracking-tight">Welcome Back</h2>
                         <p className="text-muted-foreground">Sign in to manage your studio</p>
+                    </div>
+
+                    <div className="lg:hidden text-center space-y-1">
+                        <h3 className="text-xl font-bold">Sign In</h3>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">

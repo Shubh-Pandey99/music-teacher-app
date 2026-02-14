@@ -12,195 +12,200 @@ export default async function DashboardPage() {
     if (!stats) return <div>Access Denied</div>
 
     return (
-        <div className="space-y-6 pb-20">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-                Command Center
-            </h1>
-
-            {/* Summary Cards */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats.totalStudents}</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Attendance Today</CardTitle>
-                        <UserCheck className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats.presentToday} / {stats.scheduledTodayCount}</div>
-                        <p className="text-xs text-muted-foreground">Scheduled for today</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Pending Fees</CardTitle>
-                        <Banknote className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-yellow-600">₹{stats.totalPendingAmount}</div>
-                        <p className="text-xs text-muted-foreground">from active students</p>
-                    </CardContent>
-                </Card>
+        <div className="space-y-8 pb-20 max-w-7xl mx-auto">
+            <div className="flex flex-col gap-1">
+                <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    Command Center
+                </h1>
+                <p className="text-slate-500 font-medium">Monitoring your studio's pulse and performance.</p>
             </div>
 
-            {/* Alerts Section */}
-            <div className="grid gap-4 md:grid-cols-2">
-                {/* Absent Alerts */}
-                <Card className={stats.absentAlerts.length > 0 ? "border-red-200 bg-red-50" : ""}>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <AlertTriangle className="h-5 w-5 text-red-500" />
-                            <span>Attendance Alerts</span>
-                        </CardTitle>
-                        <CardDescription>Students with 3+ consecutive absences</CardDescription>
+            {/* Summary Cards */}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <Card className="relative overflow-hidden border-none bg-slate-900 text-white shadow-2xl">
+                    <div className="absolute top-0 right-0 p-3 opacity-10">
+                        <Users className="h-24 w-24" />
+                    </div>
+                    <CardHeader className="pb-2">
+                        <CardDescription className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Total Students</CardDescription>
+                        <CardTitle className="text-4xl font-black">{stats.totalStudents}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {stats.absentAlerts.length > 0 ? (
-                            <ul className="space-y-2">
-                                {stats.absentAlerts.map((alert, i) => (
-                                    <li key={i} className="flex justify-between items-center text-sm">
-                                        <span className="font-medium text-red-700">{alert.name}</span>
-                                        <span className="text-red-600">{alert.count} days</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">No alerts.</p>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Fee Alerts */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Banknote className="h-5 w-5 text-yellow-500" />
-                            <span>Unpaid Fees</span>
-                        </CardTitle>
-                        <CardDescription>Students with pending balance this month</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {stats.studentsWithPendingFees.length > 0 ? (
-                            <div className="space-y-2">
-                                {stats.studentsWithPendingFees.slice(0, 5).map((s) => (
-                                    <div key={s.id} className="flex justify-between items-center text-sm">
-                                        <span>{s.name}</span>
-                                        <span className="font-medium text-yellow-700">₹{s.pending}</span>
-                                    </div>
-                                ))}
-                                {stats.studentsWithPendingFees.length > 5 && (
-                                    <Button variant="link" size="sm" asChild className="px-0">
-                                        <Link href="/fees">View all ({stats.studentsWithPendingFees.length})</Link>
-                                    </Button>
-                                )}
-                            </div>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">All clear.</p>
-                        )}
-                    </CardContent>
-                </Card>
-                {/* Student Progress */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                            <Calendar className="h-5 w-5 text-blue-500" />
-                            Class Cycle Progress
-                        </CardTitle>
-                        <CardDescription>Tracks progress against paid classes. Resets to next cycle after payment.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-                            {stats.studentProgress.map((student) => {
-                                const completed = student.completed
-                                const limit = student.monthlyQuota
-                                const isUnpaid = completed >= limit
-                                const remaining = Math.max(0, limit - completed)
-                                const percentage = Math.min(100, (completed / limit) * 100)
-                                const isWarning = !isUnpaid && remaining <= 2 && remaining > 0
-
-                                return (
-                                    <div key={student.id} className="space-y-1">
-                                        <div className="flex justify-between text-sm">
-                                            <span className="font-medium">{student.name}</span>
-                                            <span className={cn(
-                                                "text-xs font-medium",
-                                                isUnpaid ? "text-red-600" : "text-muted-foreground"
-                                            )}>
-                                                {completed}/{limit}
-                                            </span>
-                                        </div>
-                                        <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                                            <div
-                                                className={cn(
-                                                    "h-full transition-all duration-500",
-                                                    isUnpaid ? "bg-red-500" : isWarning ? "bg-yellow-500" : "bg-blue-600"
-                                                )}
-                                                style={{ width: `${percentage}%` }}
-                                            />
-                                        </div>
-                                        <div className="flex justify-between items-center h-4">
-                                            {isUnpaid && (
-                                                <span className="text-[10px] text-red-600 font-bold bg-red-50 px-1.5 py-0.5 rounded-full">
-                                                    Unpaid Balance
-                                                </span>
-                                            )}
-                                            {isWarning && (
-                                                <span className="text-[10px] text-yellow-600 font-bold bg-yellow-50 px-1.5 py-0.5 rounded-full">
-                                                    {remaining} classes remaining
-                                                </span>
-                                            )}
-                                            {!isUnpaid && !isWarning && (
-                                                <span className="text-[10px] text-green-600 font-bold bg-green-50 px-1.5 py-0.5 rounded-full">
-                                                    Next Cycle
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                            {stats.studentProgress.length === 0 && (
-                                <p className="text-sm text-muted-foreground text-center py-4">No active students.</p>
-                            )}
+                        <div className="flex items-center gap-2 text-xs text-slate-400">
+                            <span className="flex h-2 w-2 rounded-full bg-green-500" />
+                            Active members
                         </div>
                     </CardContent>
                 </Card>
+
+                <Card className="border-slate-100 shadow-sm transition-all hover:shadow-md">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardDescription className="font-bold uppercase tracking-wider text-[10px]">Attendance Today</CardDescription>
+                        <div className="p-2 bg-blue-50 rounded-lg">
+                            <UserCheck className="h-4 w-4 text-blue-600" />
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold text-slate-900">{stats.presentToday} / {stats.scheduledTodayCount}</div>
+                        <p className="text-xs text-slate-500 mt-1 font-medium italic">Confirmed arrivals today</p>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-slate-100 shadow-sm transition-all hover:shadow-md">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardDescription className="font-bold uppercase tracking-wider text-[10px]">Revenue Pending</CardDescription>
+                        <div className="p-2 bg-yellow-50 rounded-lg">
+                            <Banknote className="h-4 w-4 text-yellow-600" />
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold text-slate-900">₹{stats.totalPendingAmount}</div>
+                        <p className="text-xs text-slate-500 mt-1 font-medium italic">Outstanding dues this month</p>
+                    </CardContent>
+                </Card>
             </div>
 
-            {/* Quick Actions */}
-            <div>
-                <h2 className="text-lg font-semibold mb-3">Quick Actions</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <Button asChild size="lg" className="h-20 flex flex-col gap-1">
-                        <Link href="/attendance">
-                            <UserCheck className="h-6 w-6" />
-                            Mark Attendance
-                        </Link>
-                    </Button>
-                    <Button asChild size="lg" variant="outline" className="h-20 flex flex-col gap-1">
-                        <Link href="/fees">
-                            <Banknote className="h-6 w-6" />
-                            Add Payment
-                        </Link>
-                    </Button>
-                    <Button asChild size="lg" variant="outline" className="h-20 flex flex-col gap-1">
-                        <Link href="/students/new">
-                            <Users className="h-6 w-6" />
-                            Add Student
-                        </Link>
-                    </Button>
-                    <Button asChild size="lg" variant="secondary" className="h-20 flex flex-col gap-1">
-                        <Link href="/reports">
-                            <Calendar className="h-6 w-6" />
-                            View Reports
-                        </Link>
-                    </Button>
+            <div className="grid gap-8 lg:grid-cols-3">
+                {/* Alerts & Progress Column */}
+                <div className="lg:col-span-2 space-y-8">
+                    {/* Alerts Section */}
+                    {stats.absentAlerts.length > 0 && (
+                        <Card className="border-red-100 bg-red-50/50 shadow-sm overflow-hidden">
+                            <div className="h-1 bg-red-500" />
+                            <CardHeader className="pb-4">
+                                <CardTitle className="text-lg font-bold flex items-center gap-2 text-red-900">
+                                    <AlertTriangle className="h-5 w-5" />
+                                    Critical Absences
+                                </CardTitle>
+                                <CardDescription className="text-red-700/70">Action required for students missing 3+ classes consecutively.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-3">
+                                    {stats.absentAlerts.map((alert, i) => (
+                                        <div key={i} className="flex justify-between items-center p-3 bg-white rounded-xl border border-red-100 shadow-sm">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center text-red-700 font-bold text-xs">
+                                                    {alert.name[0]}
+                                                </div>
+                                                <span className="font-bold text-slate-900">{alert.name}</span>
+                                            </div>
+                                            <span className="px-3 py-1 bg-red-50 text-red-700 text-xs font-black rounded-lg uppercase tracking-tight">
+                                                {alert.count} Days Risk
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Class Cycle Progress */}
+                    <Card className="border-slate-100 shadow-sm">
+                        <CardHeader className="border-b border-slate-50 px-6 py-4">
+                            <CardTitle className="text-lg font-bold flex items-center gap-2">
+                                <Calendar className="h-5 w-5 text-blue-500" />
+                                Class Cycle Management
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="divide-y divide-slate-50 max-h-[500px] overflow-y-auto px-6">
+                                {stats.studentProgress.map((student) => {
+                                    const completed = student.completed
+                                    const limit = student.monthlyQuota
+                                    const isUnpaid = completed >= limit
+                                    const remaining = Math.max(0, limit - completed)
+                                    const percentage = Math.min(100, (completed / limit) * 100)
+                                    const isWarning = !isUnpaid && remaining <= 2 && remaining > 0
+
+                                    return (
+                                        <div key={student.id} className="py-5 group transition-colors">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <div className="space-y-0.5">
+                                                    <h4 className="font-bold text-slate-900">{student.name}</h4>
+                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{student.monthlyQuota} Classes / Month</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className={cn(
+                                                        "text-lg font-black tracking-tighter",
+                                                        isUnpaid ? "text-red-600" : "text-slate-900"
+                                                    )}>
+                                                        {completed}<span className="text-slate-300 mx-1">/</span>{limit}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden mb-2">
+                                                <div
+                                                    className={cn(
+                                                        "h-full transition-all duration-700 ease-in-out",
+                                                        isUnpaid ? "bg-red-500" : isWarning ? "bg-yellow-500" : "bg-primary"
+                                                    )}
+                                                    style={{ width: `${percentage}%` }}
+                                                />
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {isUnpaid && <span className="text-[9px] font-black uppercase tracking-widest py-1 px-2 bg-red-50 text-red-600 rounded-md">Renew Required</span>}
+                                                {isWarning && <span className="text-[9px] font-black uppercase tracking-widest py-1 px-2 bg-yellow-50 text-yellow-600 rounded-md">{remaining} classes left</span>}
+                                                {!isUnpaid && !isWarning && <span className="text-[9px] font-black uppercase tracking-widest py-1 px-2 bg-green-50 text-green-600 rounded-md">Cycle Active</span>}
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Sidebar Column: Quick Actions & Secondary Fee Alert */}
+                <div className="space-y-8">
+                    <div>
+                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 ml-1">Operations</h3>
+                        <div className="grid grid-cols-1 gap-3">
+                            <Button asChild size="lg" className="h-16 justify-start px-6 gap-4 rounded-2xl shadow-lg shadow-primary/20 transition-all hover:translate-x-1">
+                                <Link href="/attendance">
+                                    <div className="p-2 bg-white/20 rounded-xl">
+                                        <UserCheck className="h-5 w-5" />
+                                    </div>
+                                    <span className="font-bold">Roll Call</span>
+                                </Link>
+                            </Button>
+                            <Button asChild size="lg" variant="outline" className="h-16 justify-start px-6 gap-4 rounded-2xl border-slate-200 hover:bg-slate-50 transition-all hover:translate-x-1">
+                                <Link href="/students/new">
+                                    <div className="p-2 bg-slate-100 rounded-xl">
+                                        <Users className="h-5 w-5 text-slate-600" />
+                                    </div>
+                                    <span className="font-bold">Onboard Student</span>
+                                </Link>
+                            </Button>
+                            <Button asChild size="lg" variant="outline" className="h-16 justify-start px-6 gap-4 rounded-2xl border-slate-200 hover:bg-slate-50 transition-all hover:translate-x-1">
+                                <Link href="/fees">
+                                    <div className="p-2 bg-slate-100 rounded-xl">
+                                        <Banknote className="h-5 w-5 text-slate-600" />
+                                    </div>
+                                    <span className="font-bold">Manage Ledger</span>
+                                </Link>
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Fee Alerts Small Card */}
+                    {stats.studentsWithPendingFees.length > 0 && (
+                        <Card className="border-slate-100 shadow-sm bg-slate-50/50">
+                            <CardHeader className="pb-3 px-5 pt-5">
+                                <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Payment Queue</CardTitle>
+                            </CardHeader>
+                            <CardContent className="px-5 pb-5 space-y-3">
+                                {stats.studentsWithPendingFees.slice(0, 4).map((s) => (
+                                    <div key={s.id} className="flex justify-between items-center text-sm">
+                                        <span className="font-semibold text-slate-700">{s.name}</span>
+                                        <span className="font-black text-slate-900 tracking-tighter">₹{s.pending}</span>
+                                    </div>
+                                ))}
+                                <Button variant="ghost" size="sm" asChild className="w-full text-primary font-bold hover:bg-primary/5 text-xs py-5 rounded-xl border border-dashed border-primary/20">
+                                    <Link href="/fees">Generate Invoices ({stats.studentsWithPendingFees.length})</Link>
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </div>
         </div>
