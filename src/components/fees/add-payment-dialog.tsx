@@ -1,8 +1,7 @@
 
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState, useTransition } from "react"
 import {
     Dialog,
     DialogContent,
@@ -20,25 +19,22 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { addPayment } from "@/lib/actions/fees"
-import { useTransition } from "react"
 import { toast } from "sonner"
+import { Plus, Loader2 } from "lucide-react"
 
 export function AddPaymentDialog({ students }: { students: { id: string; name: string; monthlyFee: number; remaining: number }[] }) {
     const [open, setOpen] = useState(false)
     const [isPending, startTransition] = useTransition()
 
-    // Form states
     const [selectedStudent, setSelectedStudent] = useState("")
     const [amount, setAmount] = useState("")
-    const [month, setMonth] = useState(new Date().toISOString().slice(0, 7)) // YYYY-MM
+    const [month, setMonth] = useState(new Date().toISOString().slice(0, 7))
     const [notes, setNotes] = useState("")
 
     const selectedInfo = students.find(s => s.id === selectedStudent)
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        // We support advance payments now, so we don't strictly block if amount > remaining.
-        // But we still want a sanity check for very large amounts or negative ones.
         if (Number(amount) <= 0) {
             toast.error("Please enter a valid amount")
             return
@@ -52,7 +48,7 @@ export function AddPaymentDialog({ students }: { students: { id: string; name: s
 
             const result = await addPayment(formData)
             if (result.success) {
-                toast.success("Payment recorded successfully")
+                toast.success("Payment recorded! 💰")
                 setOpen(false)
                 setAmount("")
                 setNotes("")
@@ -73,69 +69,123 @@ export function AddPaymentDialog({ students }: { students: { id: string; name: s
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>Add Payment</Button>
+                <button
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all duration-200 btn-premium"
+                    style={{
+                        background: 'linear-gradient(135deg, oklch(0.52 0.18 160) 0%, oklch(0.44 0.20 185) 100%)',
+                        boxShadow: '0 4px 16px rgba(16,185,129,0.3)'
+                    }}
+                >
+                    <Plus className="h-4 w-4" />
+                    Add Payment
+                </button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent
+                className="sm:max-w-md rounded-2xl"
+                style={{
+                    background: 'oklch(0.14 0.03 280)',
+                    border: '1px solid oklch(0.25 0.04 280)',
+                    boxShadow: '0 24px 60px rgba(0,0,0,0.5)'
+                }}
+            >
                 <DialogHeader>
-                    <DialogTitle>Record Payment</DialogTitle>
+                    <DialogTitle className="text-foreground text-lg font-bold">Record Payment</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="student">Student</Label>
+
+                <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+                    {/* Student */}
+                    <div className="space-y-1.5">
+                        <Label className="text-sm font-semibold text-foreground/80">Student</Label>
                         <Select onValueChange={handleStudentChange} value={selectedStudent}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select student" />
+                            <SelectTrigger className="h-11 rounded-xl input-premium">
+                                <SelectValue placeholder="Select student..." />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent
+                                style={{
+                                    background: 'oklch(0.16 0.03 280)',
+                                    border: '1px solid oklch(0.28 0.04 280)'
+                                }}
+                            >
                                 {students.map((s) => (
                                     <SelectItem key={s.id} value={s.id}>
-                                        {s.name} (₹{s.monthlyFee})
+                                        {s.name} — ₹{s.monthlyFee}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="month">For Month</Label>
+
+                    {/* Month */}
+                    <div className="space-y-1.5">
+                        <Label className="text-sm font-semibold text-foreground/80">For Month</Label>
                         <Input
-                            id="month"
                             type="month"
                             value={month}
                             onChange={(e) => setMonth(e.target.value)}
                             required
+                            className="h-11 rounded-xl input-premium"
                         />
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="amount">Amount</Label>
+
+                    {/* Amount */}
+                    <div className="space-y-1.5">
+                        <Label className="text-sm font-semibold text-foreground/80">Amount (₹)</Label>
                         <Input
-                            id="amount"
                             type="number"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
                             required
+                            className="h-11 rounded-xl input-premium"
+                            placeholder="0"
                         />
                         {selectedInfo && selectedInfo.remaining <= 0 && (
-                            <div className="text-sm font-medium text-green-600 bg-green-50 p-2 rounded-md border border-green-100 mt-1">
-                                ✅ Fees already paid for this cycle.
+                            <div
+                                className="text-sm font-medium p-2.5 rounded-xl mt-1"
+                                style={{
+                                    background: 'oklch(0.16 0.04 160 / 0.5)',
+                                    border: '1px solid oklch(0.30 0.08 160 / 0.4)',
+                                    color: '#4ade80'
+                                }}
+                            >
+                                ✓ Fees already paid for this cycle
                             </div>
                         )}
                         {selectedInfo && selectedInfo.remaining > 0 && (
-                            <div className="text-sm text-yellow-600 font-medium">
+                            <p className="text-[11px] font-medium mt-1" style={{ color: '#fbbf24' }}>
                                 Pending balance: ₹{selectedInfo.remaining.toLocaleString()}
-                            </div>
+                            </p>
                         )}
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="notes">Notes</Label>
+
+                    {/* Notes */}
+                    <div className="space-y-1.5">
+                        <Label className="text-sm font-semibold text-foreground/80">Notes <span className="text-muted-foreground/50 font-normal">(optional)</span></Label>
                         <Input
-                            id="notes"
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
+                            placeholder="Cash, UPI, etc."
+                            className="h-11 rounded-xl input-premium"
                         />
                     </div>
-                    <Button type="submit" disabled={isPending} className="w-full">
-                        {isPending ? "Saving..." : (selectedInfo && selectedInfo.remaining <= 0 ? "Record Advance Payment" : "Save Payment")}
-                    </Button>
+
+                    <button
+                        type="submit"
+                        disabled={isPending || !selectedStudent}
+                        className="w-full h-11 rounded-xl font-bold text-white transition-all duration-200 btn-premium flex items-center justify-center gap-2 mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{
+                            background: 'linear-gradient(135deg, oklch(0.52 0.18 160) 0%, oklch(0.44 0.20 185) 100%)',
+                            boxShadow: '0 4px 16px rgba(16,185,129,0.3)'
+                        }}
+                    >
+                        {isPending ? (
+                            <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Saving...
+                            </>
+                        ) : (
+                            selectedInfo && selectedInfo.remaining <= 0 ? "Record Advance Payment" : "Save Payment"
+                        )}
+                    </button>
                 </form>
             </DialogContent>
         </Dialog>

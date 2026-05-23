@@ -1,7 +1,7 @@
+
 "use client"
 
 import { signOut } from "next-auth/react"
-import { Button } from "@/components/ui/button"
 import { LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -28,29 +28,38 @@ export function LogoutButton({ className, variant = "ghost", hideText = false, c
         <AlertDialog>
             <AlertDialogTrigger asChild>
                 {children ? children : (
-                    <Button
-                        variant={variant}
-                        className={cn("flex items-center gap-3 w-full justify-start", className)}
+                    <button
+                        className={cn(
+                            "flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 text-muted-foreground hover:text-red-400 hover:bg-red-500/10",
+                            className
+                        )}
                     >
-                        <LogOut className="h-4 w-4" />
-                        {!hideText && <span>Logout</span>}
-                    </Button>
+                        <div className="p-1 rounded-lg">
+                            <LogOut className="h-4 w-4" />
+                        </div>
+                        {!hideText && <span>Sign Out</span>}
+                    </button>
                 )}
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent
+                style={{
+                    background: 'oklch(0.14 0.03 280)',
+                    border: '1px solid oklch(0.25 0.04 280)'
+                }}
+            >
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure you want to logout?</AlertDialogTitle>
-                    <AlertDialogDescription>
+                    <AlertDialogTitle className="text-foreground">Sign out?</AlertDialogTitle>
+                    <AlertDialogDescription className="text-muted-foreground">
                         You will need to sign in again to access your student records and dashboard.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel className="rounded-xl border-border/40">Cancel</AlertDialogCancel>
                     <AlertDialogAction
                         onClick={() => signOut({ callbackUrl: "/login" })}
-                        className="bg-red-600 hover:bg-red-700"
+                        className="bg-red-600 hover:bg-red-700 rounded-xl"
                     >
-                        Logout
+                        Sign Out
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>

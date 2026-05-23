@@ -2,6 +2,8 @@
 import { getMonthlyReport } from "@/lib/actions/reports"
 import { ReportsView } from "@/components/reports/reports-view"
 import { format } from "date-fns"
+import { BarChart3, ChevronLeft, ChevronRight } from "lucide-react"
+import Link from "next/link"
 
 export default async function ReportsPage({
     searchParams,
@@ -15,15 +17,50 @@ export default async function ReportsPage({
 
     const { reportData, summary } = await getMonthlyReport(currentMonth, currentYear)
 
-    return (
-        <div className="space-y-6 pb-20">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <h1 className="text-2xl font-bold tracking-tight">Reports</h1>
+    // Prev/Next month navigation
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1
+    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear
+    const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1
+    const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear
 
-                <div className="flex gap-2 items-center">
-                    <div className="text-sm font-medium text-muted-foreground bg-secondary px-3 py-1 rounded-md">
-                        {format(new Date(currentYear, currentMonth, 1), "MMMM yyyy")}
+    return (
+        <div className="space-y-6 pb-24 max-w-7xl mx-auto animate-fade-in">
+
+            {/* Page Header */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-float-up">
+                <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-3">
+                        <div
+                            className="p-2 rounded-xl"
+                            style={{ background: 'linear-gradient(135deg, oklch(0.52 0.22 160), oklch(0.44 0.20 185))' }}
+                        >
+                            <BarChart3 className="h-5 w-5 text-white" />
+                        </div>
+                        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Reports</h1>
                     </div>
+                    <p className="text-muted-foreground font-medium pl-12">Monthly performance overview</p>
+                </div>
+
+                {/* Month Navigator */}
+                <div
+                    className="flex items-center gap-1 rounded-2xl p-1"
+                    style={{ background: 'oklch(0.14 0.03 280)', border: '1px solid oklch(0.22 0.03 280)' }}
+                >
+                    <Link
+                        href={`/reports?month=${prevMonth}&year=${prevYear}`}
+                        className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all"
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </Link>
+                    <span className="px-4 text-sm font-bold text-foreground min-w-[130px] text-center">
+                        {format(new Date(currentYear, currentMonth, 1), "MMMM yyyy")}
+                    </span>
+                    <Link
+                        href={`/reports?month=${nextMonth}&year=${nextYear}`}
+                        className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all"
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                    </Link>
                 </div>
             </div>
 
