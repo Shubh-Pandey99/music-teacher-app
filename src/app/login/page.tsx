@@ -9,8 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { signIn } from "next-auth/react"
 import { toast } from "sonner"
-import { Loader2, GraduationCap, CheckCircle2, Calendar, Users, CreditCard, BarChart3 } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Loader2, Music2, Calendar, Users, CreditCard, BarChart3, CheckCircle2 } from "lucide-react"
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false)
@@ -34,7 +33,7 @@ export default function LoginPage() {
             if (result?.error) {
                 toast.error("Invalid email or password")
             } else {
-                toast.success("Welcome back!")
+                toast.success("Welcome back! 🎵")
                 router.push("/dashboard")
                 router.refresh()
             }
@@ -46,151 +45,244 @@ export default function LoginPage() {
     }
 
     const features = [
-        { icon: Calendar, text: "Seamless Attendance Tracking" },
-        { icon: Users, text: "Centralized Student Management" },
-        { icon: CreditCard, text: "Automated Fee Collection" },
-        { icon: BarChart3, text: "Comprehensive Progress Reports" },
+        { icon: Calendar, text: "Seamless Attendance Tracking", color: "text-teal-400" },
+        { icon: Users, text: "Centralized Student Management", color: "text-blue-400" },
+        { icon: CreditCard, text: "Automated Fee Collection", color: "text-amber-400" },
+        { icon: BarChart3, text: "Comprehensive Progress Reports", color: "text-emerald-400" },
     ]
 
     return (
-        <div className="flex min-h-screen w-full font-sans">
-            {/* Left Side: Product Overview & Branding */}
-            <div className="hidden lg:flex lg:w-1/2 bg-slate-950 text-white p-12 flex-col justify-between relative overflow-hidden animate-gradient-shift bg-gradient-to-br from-slate-950 via-primary/20 to-blue-900/30">
-                {/* Noise Texture Overlay */}
-                <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+        <div className="flex min-h-screen w-full">
+            {/* Left Side: Branding */}
+            <div
+                className="hidden lg:flex lg:w-1/2 flex-col justify-between relative overflow-hidden p-12"
+                style={{
+                    background: 'linear-gradient(145deg, oklch(0.08 0.02 280) 0%, oklch(0.12 0.04 295) 50%, oklch(0.10 0.03 260) 100%)',
+                    borderRight: '1px solid oklch(0.22 0.03 280)'
+                }}
+            >
+                {/* Animated orbs */}
+                <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full animate-pulse-glow pointer-events-none"
+                    style={{ background: 'radial-gradient(circle, oklch(0.55 0.22 295 / 0.12) 0%, transparent 70%)' }} />
+                <div className="absolute bottom-[15%] left-[-10%] w-[350px] h-[350px] rounded-full pointer-events-none"
+                    style={{ background: 'radial-gradient(circle, oklch(0.50 0.18 200 / 0.08) 0%, transparent 70%)' }} />
+                <div className="absolute top-[40%] right-[20%] w-[200px] h-[200px] rounded-full pointer-events-none"
+                    style={{ background: 'radial-gradient(circle, oklch(0.60 0.22 300 / 0.06) 0%, transparent 70%)' }} />
 
-                <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] animate-breathe" />
+                {/* Grid pattern overlay */}
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                    style={{
+                        backgroundImage: 'linear-gradient(oklch(0.9 0 0 / 0.5) 1px, transparent 1px), linear-gradient(90deg, oklch(0.9 0 0 / 0.5) 1px, transparent 1px)',
+                        backgroundSize: '40px 40px'
+                    }} />
 
-                <div className="relative z-10 animate-fade-rise">
-                    <div className="flex items-center gap-2 mb-12">
-                        <div className="bg-primary p-2 rounded-xl premium-shadow">
-                            <GraduationCap className="h-6 w-6 text-white" />
+                {/* Logo */}
+                <div className="relative z-10 animate-float-up">
+                    <div className="flex items-center gap-3 mb-16">
+                        <div
+                            className="p-3 rounded-2xl"
+                            style={{
+                                background: 'linear-gradient(135deg, oklch(0.62 0.22 295), oklch(0.52 0.25 270))',
+                                boxShadow: '0 0 30px rgba(139,92,246,0.5)'
+                            }}
+                        >
+                            <Music2 className="h-7 w-7 text-white" />
                         </div>
-                        <span className="font-bold text-2xl tracking-tight">TeacherPro Manager</span>
+                        <div>
+                            <span className="font-black text-2xl tracking-tight text-white">MusicPro</span>
+                            <span className="block text-[10px] text-muted-foreground/60 uppercase tracking-widest font-medium">Manager Platform</span>
+                        </div>
                     </div>
 
                     <div className="space-y-6 max-w-md">
-                        <h1 className="text-4xl xl:text-5xl font-extrabold leading-tight tracking-tight stagger-1 animate-fade-rise">
-                            Elevate your <span className="text-primary italic">professional</span> teaching journey.
+                        <h1 className="text-5xl xl:text-6xl font-extrabold leading-[1.1] tracking-tight text-white">
+                            Amplify your{" "}
+                            <span
+                                className="inline-block"
+                                style={{
+                                    background: 'linear-gradient(135deg, oklch(0.80 0.20 295), oklch(0.75 0.22 275))',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    backgroundClip: 'text',
+                                    textShadow: 'none'
+                                }}
+                            >
+                                studio
+                            </span>
                         </h1>
-                        <p className="text-slate-400 text-lg stagger-2 animate-fade-rise">
-                            The all-in-one workstation for independent teachers and academies to manage students, track progress, and grow their passion.
+                        <p className="text-muted-foreground text-lg leading-relaxed">
+                            The all-in-one workstation for independent music teachers and academies to manage students, track progress, and grow their passion.
                         </p>
                     </div>
                 </div>
 
-                <div className="relative z-10 space-y-8 animate-fade-rise stagger-3">
-                    <div className="grid grid-cols-1 gap-4">
+                {/* Features */}
+                <div className="relative z-10 space-y-8 animate-float-up stagger-3">
+                    <div className="space-y-3">
                         {features.map((feature, i) => (
-                            <div key={i} className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:translate-x-1">
-                                <feature.icon className="h-5 w-5 text-primary" />
-                                <span className="text-sm font-medium text-slate-200">{feature.text}</span>
+                            <div
+                                key={i}
+                                className="flex items-center gap-3 p-3.5 rounded-2xl transition-all duration-300 hover:scale-[1.02] cursor-default"
+                                style={{
+                                    background: 'oklch(0.15 0.03 280 / 0.6)',
+                                    backdropFilter: 'blur(12px)',
+                                    border: '1px solid oklch(0.30 0.05 280 / 0.3)'
+                                }}
+                            >
+                                <div className="p-1.5 rounded-lg"
+                                    style={{ background: 'oklch(0.18 0.04 280 / 0.8)' }}>
+                                    <feature.icon className={`h-4 w-4 ${feature.color}`} />
+                                </div>
+                                <span className="text-sm font-medium text-foreground/90">{feature.text}</span>
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400/70 ml-auto" />
                             </div>
                         ))}
                     </div>
 
-                    <div className="pt-8 border-t border-white/10">
-                        <blockquote className="space-y-2">
-                            <p className="text-slate-300 text-sm italic italic">
-                                "TeacherPro Manager helped me more than double my students while spending 70% less time on administration. It's a game-changer."
-                            </p>
-                            <footer className="text-white font-semibold text-sm">— Sarah Chen, Professional Instructor</footer>
-                        </blockquote>
+                    {/* Testimonial */}
+                    <div
+                        className="p-4 rounded-2xl"
+                        style={{
+                            background: 'oklch(0.14 0.03 280 / 0.7)',
+                            border: '1px solid oklch(0.28 0.04 280 / 0.4)'
+                        }}
+                    >
+                        <p className="text-muted-foreground text-sm italic leading-relaxed">
+                            &ldquo;MusicPro Manager helped me double my students while spending 70% less time on admin. Game-changer for any music educator.&rdquo;
+                        </p>
+                        <p className="text-white font-semibold text-sm mt-2">— Sarah Chen, Professional Instructor</p>
                     </div>
                 </div>
             </div>
 
             {/* Right Side: Login Form */}
-            <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 md:p-24 bg-slate-50 dark:bg-slate-950 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.015] pointer-events-none" />
+            <div
+                className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 relative overflow-hidden"
+                style={{ background: 'oklch(0.10 0.02 280)' }}
+            >
+                {/* Background decoration */}
+                <div className="absolute inset-0 pointer-events-none">
+                    <div className="absolute top-[20%] right-[-5%] w-64 h-64 rounded-full"
+                        style={{ background: 'radial-gradient(circle, oklch(0.55 0.22 295 / 0.06) 0%, transparent 70%)' }} />
+                    <div className="absolute bottom-[20%] left-[-5%] w-48 h-48 rounded-full"
+                        style={{ background: 'radial-gradient(circle, oklch(0.50 0.18 200 / 0.05) 0%, transparent 70%)' }} />
+                </div>
 
-                <div className="w-full max-w-sm space-y-8 glass p-8 sm:p-10 rounded-[2.5rem] animate-fade-rise relative z-10">
-                    <div className="lg:hidden flex flex-col items-center mb-4 text-center">
-                        <div className="bg-primary p-3 rounded-2xl mb-4 premium-shadow animate-breathe">
-                            <GraduationCap className="h-8 w-8 text-white" />
+                <div className="w-full max-w-sm space-y-8 relative z-10">
+                    {/* Mobile Logo */}
+                    <div className="lg:hidden flex flex-col items-center text-center animate-float-up">
+                        <div
+                            className="p-3 rounded-2xl mb-4"
+                            style={{
+                                background: 'linear-gradient(135deg, oklch(0.62 0.22 295), oklch(0.52 0.25 270))',
+                                boxShadow: '0 0 30px rgba(139,92,246,0.4)'
+                            }}
+                        >
+                            <Music2 className="h-8 w-8 text-white" />
                         </div>
-                        <h2 className="text-3xl font-extrabold tracking-tight stagger-1 animate-fade-rise">TeacherPro Manager</h2>
-                        <p className="text-muted-foreground mt-2 max-w-[280px] stagger-2 animate-fade-rise">Manage your studio with total professional control.</p>
-
-                        {/* Mobile Feature Pills */}
-                        <div className="flex flex-wrap justify-center gap-2 mt-6">
-                            {['Attendance', 'Fees', 'Stats'].map((f) => (
-                                <span key={f} className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                        <h2 className="text-3xl font-extrabold tracking-tight text-white">MusicPro</h2>
+                        <p className="text-muted-foreground mt-2 text-sm">Manage your studio with total control.</p>
+                        <div className="flex gap-2 mt-4">
+                            {['Attendance', 'Fees', 'Reports'].map((f) => (
+                                <span
+                                    key={f}
+                                    className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-violet-400"
+                                    style={{
+                                        background: 'oklch(0.18 0.05 295 / 0.5)',
+                                        border: '1px solid oklch(0.35 0.12 295 / 0.4)'
+                                    }}
+                                >
                                     {f}
                                 </span>
                             ))}
                         </div>
                     </div>
 
-                    <div className="text-left space-y-2 lg:block hidden">
-                        <h2 className="text-3xl font-bold tracking-tight">Welcome Back</h2>
-                        <p className="text-muted-foreground">Sign in to manage your studio</p>
+                    {/* Form Header */}
+                    <div className="space-y-1 animate-float-up stagger-1">
+                        <h2 className="text-3xl font-bold tracking-tight text-white">Welcome back</h2>
+                        <p className="text-muted-foreground">Sign in to your studio workspace</p>
                     </div>
 
-                    <div className="lg:hidden text-center space-y-1">
-                        <h3 className="text-xl font-bold">Sign In</h3>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Form */}
+                    <form onSubmit={handleSubmit} className="space-y-5 animate-float-up stagger-2">
                         <div className="space-y-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email" className="text-sm font-semibold">Email Address</Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-sm font-semibold text-foreground/90">
+                                    Email Address
+                                </Label>
                                 <Input
                                     id="email"
                                     name="email"
                                     type="email"
                                     placeholder="name@studio.com"
                                     required
-                                    className="h-12 border-slate-200 transition-all rounded-xl input-premium"
+                                    className="h-12 rounded-xl input-premium"
                                 />
                             </div>
-                            <div className="grid gap-2">
+                            <div className="space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <Label htmlFor="password">Password</Label>
-                                    <Link href="#" className="text-xs text-primary hover:underline font-medium">Forgot password?</Link>
+                                    <Label htmlFor="password" className="text-sm font-semibold text-foreground/90">
+                                        Password
+                                    </Label>
+                                    <Link href="#" className="text-xs text-violet-400 hover:text-violet-300 font-medium transition-colors">
+                                        Forgot password?
+                                    </Link>
                                 </div>
                                 <Input
                                     id="password"
                                     name="password"
                                     type="password"
                                     required
-                                    className="h-12 border-slate-200 transition-all rounded-xl input-premium"
+                                    className="h-12 rounded-xl input-premium"
                                 />
                             </div>
                         </div>
 
-                        <Button
-                            className="w-full h-12 rounded-xl text-base font-bold premium-shadow btn-premium"
+                        <button
+                            type="submit"
                             disabled={loading}
+                            className="w-full h-12 rounded-xl font-bold text-white transition-all duration-300 relative overflow-hidden btn-premium disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            style={{
+                                background: loading
+                                    ? 'oklch(0.40 0.15 295)'
+                                    : 'linear-gradient(135deg, oklch(0.62 0.22 295) 0%, oklch(0.52 0.25 270) 100%)',
+                                boxShadow: loading ? 'none' : '0 4px 20px rgba(139,92,246,0.4)'
+                            }}
                         >
                             {loading ? (
                                 <>
-                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    <Loader2 className="h-5 w-5 animate-spin" />
                                     Signing in...
                                 </>
-                            ) : "Sign In"}
-                        </Button>
+                            ) : (
+                                "Sign In →"
+                            )}
+                        </button>
                     </form>
 
-                    <div className="relative">
+                    {/* Divider */}
+                    <div className="relative animate-float-up stagger-3">
                         <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-slate-100" />
+                            <div className="w-full border-t border-border/40" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-white dark:bg-slate-950 px-2 text-muted-foreground font-medium">New here?</span>
+                            <span className="px-3 text-muted-foreground/60 font-medium" style={{ background: 'oklch(0.10 0.02 280)' }}>
+                                New here?
+                            </span>
                         </div>
                     </div>
 
-                    <p className="text-center text-sm text-slate-500">
-                        Join 2,000+ teachers and academies.{" "}
-                        <Link href="/signup" className="text-primary font-bold hover:underline transition-colors decoration-2 underline-offset-4">
-                            Create a free account
+                    <p className="text-center text-sm text-muted-foreground animate-float-up stagger-4">
+                        Join thousands of music educators.{" "}
+                        <Link href="/signup" className="text-violet-400 font-bold hover:text-violet-300 transition-colors underline-offset-4 hover:underline">
+                            Create free account
                         </Link>
                     </p>
                 </div>
 
-                <footer className="mt-auto pt-12 text-center text-xs text-slate-400">
-                    &copy; 2026 TeacherPro Manager. All rights reserved.
+                <footer className="mt-auto pt-8 text-center text-xs text-muted-foreground/40">
+                    &copy; 2026 MusicPro Manager. All rights reserved.
                 </footer>
             </div>
         </div>

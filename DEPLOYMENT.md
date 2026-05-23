@@ -37,6 +37,37 @@ Vercel is the best for Next.js, but it **does not support SQLite files**. You sh
 
 ---
 
+## 🚦 Staging & Production Workflow (Vercel)
+
+If you want to verify your changes in a **staging** environment before they go **live (production)**, Vercel supports this natively using Git branches.
+
+### How it works:
+1. **Production Environment (`main` branch):** Vercel considers your default repository branch (usually `main` or `master`) as the Production environment. Any code pushed here goes live to your main domain.
+2. **Staging/Preview Environment (e.g., `staging` branch):** Any other branch pushed to GitHub will trigger a "Preview Deployment" in Vercel.
+
+### Setup Steps:
+1. **Create a `staging` branch** in your repository:
+   ```bash
+   git checkout -b staging
+   git push origin staging
+   ```
+2. **Develop on Staging:** When you make changes, commit and push them to the `staging` branch.
+   ```bash
+   git commit -m "my new feature"
+   git push origin staging
+   ```
+3. **Verify on Vercel:** Go to your Vercel dashboard. You will see a new Preview Deployment for the `staging` branch. Vercel provides a unique URL for this deployment where you can test your changes.
+4. **Promote to Production:** Once you have verified the changes on the staging URL, you can promote them to production by merging `staging` into `main`.
+   ```bash
+   git checkout main
+   git merge staging
+   git push origin main
+   ```
+   *Alternatively, you can open a Pull Request on GitHub from `staging` to `main` and merge it there.*
+5. **Custom Staging Domain (Optional):** In your Vercel Project Settings > Domains, you can assign a specific domain (like `staging.your-app.com`) to always point to the `staging` Git branch.
+
+---
+
 ## 🛠️ Essential Deployment Steps
 
 ### 1. Generate Auth Secret
