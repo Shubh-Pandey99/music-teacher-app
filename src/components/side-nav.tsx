@@ -63,11 +63,6 @@ export function SideNav() {
                         <div className="bg-gradient-to-br from-violet-500 to-purple-700 p-1.5 rounded-xl shadow-lg dark:shadow-violet-900/40">
                             <Music2 className="h-4 w-4 text-white" />
                         </div>
-                        <div className="absolute -right-1 -top-1 flex items-end gap-0.5 h-2.5">
-                            <div className="music-bar" style={{ height: '50%' }} />
-                            <div className="music-bar" style={{ height: '100%' }} />
-                            <div className="music-bar" style={{ height: '70%' }} />
-                        </div>
                     </div>
                     <div>
                         <span className="font-bold text-sm text-foreground tracking-tight">MusicPro</span>
