@@ -42,10 +42,7 @@ export default async function ReportsPage({
                 </div>
 
                 {/* Month Navigator */}
-                <div
-                    className="flex items-center gap-1 rounded-2xl p-1"
-                    style={{ background: 'oklch(0.14 0.03 280)', border: '1px solid oklch(0.22 0.03 280)' }}
-                >
+                <div className="flex items-center gap-1 rounded-2xl p-1 border border-border bg-card shadow-sm">
                     <Link
                         href={`/reports?month=${prevMonth}&year=${prevYear}`}
                         className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all"
