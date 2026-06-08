@@ -41,12 +41,7 @@ export function LogoutButton({ className, variant = "ghost", hideText = false, c
                     </button>
                 )}
             </AlertDialogTrigger>
-            <AlertDialogContent
-                style={{
-                    background: 'oklch(0.14 0.03 280)',
-                    border: '1px solid oklch(0.25 0.04 280)'
-                }}
-            >
+            <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle className="text-foreground">Sign out?</AlertDialogTitle>
                     <AlertDialogDescription className="text-muted-foreground">

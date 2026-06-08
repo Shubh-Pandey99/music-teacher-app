@@ -28,7 +28,7 @@ export function ReportsView({ data, summary, month, year }: {
     }
 
     const avgAtt = data.length > 0
-        ? (data.reduce((a, c) => a + (c.present / c.quota), 0) / data.length * 100).toFixed(0) : "0"
+        ? (data.reduce((a, c) => a + (c.present / Math.max(1, c.quota)), 0) / data.length * 100).toFixed(0) : "0"
 
     return (
         <div className="space-y-5 animate-fade-in">
@@ -96,8 +96,8 @@ export function ReportsView({ data, summary, month, year }: {
                         </TableHeader>
                         <TableBody>
                             {data.map((s) => {
-                                const attPct  = Math.min(100, Math.round((s.present / s.quota) * 100))
-                                const batchPct = Math.min(100, Math.round((s.batchProgress / s.quota) * 100))
+                                const attPct  = Math.min(100, Math.round((s.present / Math.max(1, s.quota)) * 100))
+                                const batchPct = Math.min(100, Math.round((s.batchProgress / Math.max(1, s.quota)) * 100))
                                 const isPaid   = s.status === "PAID"
                                 const isPartial = s.status === "PARTIAL"
 

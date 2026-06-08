@@ -36,8 +36,8 @@ export default async function StudentsPage({
                     {[...Array(6)].map((_, i) => (
                         <div
                             key={i}
-                            className="rounded-2xl p-5 animate-pulse"
-                            style={{ background: 'oklch(0.13 0.025 280)', border: '1px solid oklch(0.22 0.03 280)', height: '140px' }}
+                            className="rounded-2xl p-5 animate-pulse bg-card border border-border"
+                            style={{ height: '140px' }}
                         />
                     ))}
                 </div>

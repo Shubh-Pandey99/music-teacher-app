@@ -11,13 +11,33 @@ export default async function FeesPage({
 }: { searchParams: Promise<{ month?: string; year?: string }> }) {
     const { month, year } = await searchParams
     const now = new Date()
-    const currentMonth = month ? parseInt(month) : now.getMonth()
-    const currentYear  = year  ? parseInt(year)  : now.getFullYear()
+    const currentMonth = month ? (parseInt(month) || now.getMonth()) : now.getMonth()
+    const currentYear  = year  ? (parseInt(year)  || now.getFullYear()) : now.getFullYear()
 
-    const [studentStatuses, recentPayments] = await Promise.all([
-        getFeeStatus(currentMonth, currentYear),
-        getRecentPayments(15)
-    ])
+    let studentStatuses: Awaited<ReturnType<typeof getFeeStatus>> = []
+    let recentPayments: Awaited<ReturnType<typeof getRecentPayments>> = []
+    let fetchError = false
+
+    try {
+        ;[studentStatuses, recentPayments] = await Promise.all([
+            getFeeStatus(currentMonth, currentYear),
+            getRecentPayments(15)
+        ])
+    } catch {
+        fetchError = true
+    }
+
+    if (fetchError) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="text-center space-y-3">
+                    <div className="text-4xl">⚠️</div>
+                    <h2 className="text-lg font-bold text-foreground">Failed to load fees</h2>
+                    <p className="text-muted-foreground text-sm">There was a problem fetching fee data. Please refresh the page.</p>
+                </div>
+            </div>
+        )
+    }
 
     const monthName      = format(new Date(currentYear, currentMonth, 1), "MMMM yyyy")
     const totalPending   = studentStatuses.reduce((a, s) => a + Number(s.remaining), 0)
