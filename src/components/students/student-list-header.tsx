@@ -56,22 +56,12 @@ export function StudentListHeader() {
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <button
-                        className="h-11 w-11 rounded-xl flex items-center justify-center transition-all duration-200 text-muted-foreground hover:text-foreground"
-                        style={{
-                            background: 'oklch(0.16 0.03 280)',
-                            border: '1px solid oklch(0.25 0.04 280)'
-                        }}
+                        className="h-11 w-11 rounded-xl flex items-center justify-center transition-all duration-200 text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted/50"
                     >
                         <ListFilter className="h-4 w-4" />
                     </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent
-                    align="end"
-                    style={{
-                        background: 'oklch(0.15 0.03 280)',
-                        border: '1px solid oklch(0.25 0.04 280)'
-                    }}
-                >
+                <DropdownMenuContent align="end">
                     <DropdownMenuRadioGroup value={searchParams.get("sort") || "name"} onValueChange={handleSort}>
                         <DropdownMenuRadioItem value="name">Name (A-Z)</DropdownMenuRadioItem>
                         <DropdownMenuRadioItem value="recent">Recent Activity</DropdownMenuRadioItem>
