@@ -1,11 +1,11 @@
 
 export default function DashboardLoading() {
     return (
-        <div className="space-y-8 pb-24 max-w-7xl mx-auto">
+        <div className="space-y-8 pb-24 max-w-7xl mx-auto animate-pulse">
             {/* Header skeleton */}
             <div className="space-y-2">
-                <div className="h-10 w-48 rounded-xl animate-pulse" style={{ background: 'oklch(0.18 0.03 280)' }} />
-                <div className="h-5 w-72 rounded-lg animate-pulse" style={{ background: 'oklch(0.15 0.025 280)' }} />
+                <div className="h-10 w-48 rounded-xl bg-muted/60" />
+                <div className="h-5 w-72 rounded-lg bg-muted/40" />
             </div>
 
             {/* Stat cards skeleton */}
@@ -13,26 +13,24 @@ export default function DashboardLoading() {
                 {[...Array(3)].map((_, i) => (
                     <div
                         key={i}
-                        className="rounded-2xl p-6 animate-pulse"
-                        style={{
-                            background: i === 0
-                                ? 'oklch(0.30 0.10 295 / 0.3)'
-                                : 'oklch(0.16 0.03 280)',
-                            border: '1px solid oklch(0.22 0.03 280)',
-                            height: '140px'
-                        }}
-                    />
+                        className="rounded-2xl p-6 bg-card border border-border"
+                        style={{ height: '140px' }}
+                    >
+                        <div className="h-4 w-24 bg-muted/50 rounded mb-4" />
+                        <div className="h-10 w-32 bg-muted rounded mb-2" />
+                        <div className="h-3 w-40 bg-muted/40 rounded" />
+                    </div>
                 ))}
             </div>
 
             {/* Content grid skeleton */}
             <div className="grid gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-2 space-y-4">
-                    <div className="rounded-2xl animate-pulse" style={{ background: 'oklch(0.13 0.025 280)', border: '1px solid oklch(0.22 0.03 280)', height: '400px' }} />
+                    <div className="rounded-2xl bg-card border border-border" style={{ height: '400px' }} />
                 </div>
                 <div className="space-y-4">
-                    {[...Array(3)].map((_, i) => (
-                        <div key={i} className="rounded-2xl animate-pulse" style={{ background: 'oklch(0.13 0.025 280)', border: '1px solid oklch(0.22 0.03 280)', height: '80px' }} />
+                    {[...Array(4)].map((_, i) => (
+                        <div key={i} className="rounded-2xl bg-card border border-border" style={{ height: '80px' }} />
                     ))}
                 </div>
             </div>

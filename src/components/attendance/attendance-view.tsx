@@ -65,18 +65,19 @@ export function AttendanceView({ students, attendance, date, monthlyCounts = {} 
 
             {/* Calendar */}
             <div className="w-full lg:w-auto flex-shrink-0">
-                <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                <div className="rounded-2xl border border-border bg-card overflow-hidden w-full overflow-x-auto">
                     <div className="px-4 py-2.5 border-b border-border/60">
                         <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/50">Select Date</p>
                     </div>
-                    <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={(d) => {
-                            if (d) router.push(`/attendance?date=${format(d, "yyyy-MM-dd")}`)
-                        }}
-                        className="p-3"
-                    />
+                    <div className="min-w-fit flex justify-center p-2 sm:p-3">
+                        <Calendar
+                            mode="single"
+                            selected={date}
+                            onSelect={(d) => {
+                                if (d) router.push(`/attendance?date=${format(d, "yyyy-MM-dd")}`)
+                            }}
+                        />
+                    </div>
                 </div>
             </div>
 
