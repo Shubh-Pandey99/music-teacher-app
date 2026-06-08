@@ -16,6 +16,7 @@ export default async function ReportsPage({
     const currentYear = year ? parseInt(year) : now.getFullYear()
 
     const { reportData, summary } = await getMonthlyReport(currentMonth, currentYear)
+        .catch(() => ({ reportData: [], summary: { totalCollected: 0, totalPending: 0 } }))
 
     // Prev/Next month navigation
     const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1

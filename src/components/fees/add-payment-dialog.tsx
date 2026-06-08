@@ -80,14 +80,7 @@ export function AddPaymentDialog({ students }: { students: { id: string; name: s
                     Add Payment
                 </button>
             </DialogTrigger>
-            <DialogContent
-                className="sm:max-w-md rounded-2xl"
-                style={{
-                    background: 'oklch(0.14 0.03 280)',
-                    border: '1px solid oklch(0.25 0.04 280)',
-                    boxShadow: '0 24px 60px rgba(0,0,0,0.5)'
-                }}
-            >
+            <DialogContent className="sm:max-w-md rounded-2xl">
                 <DialogHeader>
                     <DialogTitle className="text-foreground text-lg font-bold">Record Payment</DialogTitle>
                 </DialogHeader>
@@ -100,12 +93,7 @@ export function AddPaymentDialog({ students }: { students: { id: string; name: s
                             <SelectTrigger className="h-11 rounded-xl input-premium">
                                 <SelectValue placeholder="Select student..." />
                             </SelectTrigger>
-                            <SelectContent
-                                style={{
-                                    background: 'oklch(0.16 0.03 280)',
-                                    border: '1px solid oklch(0.28 0.04 280)'
-                                }}
-                            >
+                            <SelectContent>
                                 {students.map((s) => (
                                     <SelectItem key={s.id} value={s.id}>
                                         {s.name} — ₹{s.monthlyFee}
@@ -139,19 +127,12 @@ export function AddPaymentDialog({ students }: { students: { id: string; name: s
                             placeholder="0"
                         />
                         {selectedInfo && selectedInfo.remaining <= 0 && (
-                            <div
-                                className="text-sm font-medium p-2.5 rounded-xl mt-1"
-                                style={{
-                                    background: 'oklch(0.16 0.04 160 / 0.5)',
-                                    border: '1px solid oklch(0.30 0.08 160 / 0.4)',
-                                    color: '#4ade80'
-                                }}
-                            >
+                            <div className="text-sm font-medium p-2.5 rounded-xl mt-1 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-400">
                                 ✓ Fees already paid for this cycle
                             </div>
                         )}
                         {selectedInfo && selectedInfo.remaining > 0 && (
-                            <p className="text-[11px] font-medium mt-1" style={{ color: '#fbbf24' }}>
+                            <p className="text-[11px] font-medium mt-1 text-amber-600 dark:text-amber-400">
                                 Pending balance: ₹{selectedInfo.remaining.toLocaleString()}
                             </p>
                         )}

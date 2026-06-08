@@ -1,7 +1,7 @@
 import { auth } from "@/auth"
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
-import { GraduationCap, CheckCircle, Users, CreditCard } from "lucide-react"
+import { Music2, CheckCircle, Users, CreditCard } from "lucide-react"
 import { LogoutButton } from "@/components/auth/logout-button"
 
 export default async function Home() {
@@ -9,22 +9,30 @@ export default async function Home() {
   const isLoggedIn = !!session?.user
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="px-4 lg:px-6 h-16 flex items-center border-b backdrop-blur-sm sticky top-0 z-50 bg-white/80">
-        <div className="flex items-center justify-center group cursor-default">
-          <GraduationCap className="h-7 w-7 text-primary mr-2 transition-transform group-hover:scale-110" />
-          <span className="font-bold text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600">
-            TeacherPro Manager
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
+      {/* Header */}
+      <header className="px-4 lg:px-6 h-16 flex items-center border-b border-border backdrop-blur-sm sticky top-0 z-50 bg-background/80">
+        <div className="flex items-center gap-2 cursor-default">
+          <div
+            className="p-1.5 rounded-xl"
+            style={{ background: 'linear-gradient(135deg, oklch(0.62 0.22 295), oklch(0.52 0.25 270))' }}
+          >
+            <Music2 className="h-4 w-4 text-white" />
+          </div>
+          <span className="font-black text-lg sm:text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400">
+            MusicPro Manager
           </span>
         </div>
-        <nav className="ml-auto flex gap-4 sm:gap-8">
+        <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
           {!isLoggedIn ? (
             <>
-              <Link className="text-sm font-medium hover:text-primary transition-colors" href="/login">
+              <Link className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors" href="/login">
                 Login
               </Link>
-              <Link className="text-sm font-medium hover:text-primary transition-colors" href="/signup">
-                Get Started
+              <Link href="/signup">
+                <Button size="sm" className="rounded-xl" style={{ background: 'linear-gradient(135deg, oklch(0.62 0.22 295), oklch(0.52 0.25 270))' }}>
+                  Get Started
+                </Button>
               </Link>
             </>
           ) : (
@@ -32,35 +40,53 @@ export default async function Home() {
           )}
         </nav>
       </header>
+
       <main className="flex-1">
-        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-blue-50">
+        {/* Hero */}
+        <section className="w-full py-16 md:py-28 lg:py-36 relative overflow-hidden bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/20 dark:to-purple-950/10">
+          {/* Decorative orbs */}
+          <div className="absolute top-[-10%] right-[-5%] w-[400px] h-[400px] rounded-full pointer-events-none opacity-60"
+            style={{ background: 'radial-gradient(circle, oklch(0.65 0.22 295 / 0.12) 0%, transparent 70%)' }} />
+          <div className="absolute bottom-[-5%] left-[-5%] w-[300px] h-[300px] rounded-full pointer-events-none opacity-40"
+            style={{ background: 'radial-gradient(circle, oklch(0.55 0.18 200 / 0.10) 0%, transparent 70%)' }} />
+
           <div className="container px-4 md:px-6 mx-auto">
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
-                  The All-in-One Platform for Teachers
+            <div className="flex flex-col items-center space-y-6 text-center">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-700/40">
+                ✨ The all-in-one studio management platform
+              </div>
+              <div className="space-y-4 max-w-3xl">
+                <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl text-foreground">
+                  The All-in-One Platform{" "}
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400">
+                    for Music Teachers
+                  </span>
                 </h1>
-                <p className="mx-auto max-w-[700px] text-zinc-500 md:text-xl dark:text-zinc-400">
-                  Manage students, track attendance, and collect fees with ease. Focus on teaching, we&apos;ll handle the rest.
+                <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
+                  Manage students, track attendance, and collect fees with ease. Focus on teaching — we&apos;ll handle the rest.
                 </p>
               </div>
-              <div className="space-x-4">
+              <div className="flex flex-col sm:flex-row items-center gap-4 mt-2">
                 {isLoggedIn ? (
                   <div className="flex flex-col items-center gap-4">
-                    <p className="text-zinc-600 font-medium">Welcome back, {session?.user?.name || 'Teacher'}!</p>
+                    <p className="text-muted-foreground font-medium">Welcome back, {session?.user?.name || 'Teacher'}!</p>
                     <Link href="/dashboard">
-                      <Button size="lg" className="px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all">
-                        Open Dashboard
+                      <Button size="lg" className="px-8 rounded-xl font-bold text-white" style={{ background: 'linear-gradient(135deg, oklch(0.62 0.22 295), oklch(0.52 0.25 270))', boxShadow: '0 4px 20px rgba(139,92,246,0.3)' }}>
+                        Open Dashboard →
                       </Button>
                     </Link>
                   </div>
                 ) : (
                   <>
                     <Link href="/signup">
-                      <Button size="lg" className="bg-blue-600 hover:bg-blue-700">Get Started Free</Button>
+                      <Button size="lg" className="rounded-xl font-bold text-white px-8" style={{ background: 'linear-gradient(135deg, oklch(0.62 0.22 295), oklch(0.52 0.25 270))', boxShadow: '0 4px 20px rgba(139,92,246,0.3)' }}>
+                        Get Started Free
+                      </Button>
                     </Link>
                     <Link href="/login">
-                      <Button variant="outline" size="lg">Sign In</Button>
+                      <Button variant="outline" size="lg" className="rounded-xl px-8 border-border">
+                        Sign In
+                      </Button>
                     </Link>
                   </>
                 )}
@@ -68,43 +94,35 @@ export default async function Home() {
             </div>
           </div>
         </section>
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-white">
+
+        {/* Features */}
+        <section className="w-full py-16 md:py-24 bg-card border-t border-border">
           <div className="container px-4 md:px-6 mx-auto">
-            <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="flex flex-col items-center space-y-3 text-center p-6 border rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <Users className="h-6 w-6 text-blue-600" />
+            <h2 className="text-center text-2xl font-bold text-foreground mb-10">Everything you need to run your studio</h2>
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                { icon: Users, title: "Student Management", desc: "Keep detailed records of all your students, their levels, and joining dates.", color: "from-blue-500 to-indigo-600", bg: "bg-blue-50 dark:bg-blue-950/20" },
+                { icon: CheckCircle, title: "Smart Attendance", desc: "Track monthly quotas and extra classes automatically. No more manual counting.", color: "from-emerald-500 to-teal-600", bg: "bg-emerald-50 dark:bg-emerald-950/20" },
+                { icon: CreditCard, title: "Fee Tracking", desc: "Manage monthly payments in INR. Instant visibility into pending fees.", color: "from-amber-500 to-orange-600", bg: "bg-amber-50 dark:bg-amber-950/20" },
+              ].map((f) => (
+                <div key={f.title} className={`flex flex-col items-center space-y-3 text-center p-6 rounded-2xl border border-border ${f.bg} transition-all hover:shadow-md`}>
+                  <div className={`p-3 rounded-xl bg-gradient-to-br ${f.color} shadow-sm`}>
+                    <f.icon className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground">{f.title}</h3>
+                  <p className="text-muted-foreground text-sm">{f.desc}</p>
                 </div>
-                <h3 className="text-xl font-bold">Student Management</h3>
-                <p className="text-zinc-500">Keep detailed records of all your students, their levels, and joining dates.</p>
-              </div>
-              <div className="flex flex-col items-center space-y-3 text-center p-6 border rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                <div className="p-3 bg-green-100 rounded-full">
-                  <CheckCircle className="h-6 w-6 text-green-600" />
-                </div>
-                <h3 className="text-xl font-bold">Smart Attendance</h3>
-                <p className="text-zinc-500">Track monthly quotas and extra classes automatically. No more manual counting.</p>
-              </div>
-              <div className="flex flex-col items-center space-y-3 text-center p-6 border rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                <div className="p-3 bg-amber-100 rounded-full">
-                  <CreditCard className="h-6 w-6 text-amber-600" />
-                </div>
-                <h3 className="text-xl font-bold">Fee Tracking</h3>
-                <p className="text-zinc-500">Manage monthly payments in INR. Instant visibility into pending fees.</p>
-              </div>
+              ))}
             </div>
           </div>
         </section>
       </main>
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-zinc-500">© 2026 TeacherPro Manager. All rights reserved.</p>
-        <nav className="sm:ml-auto flex gap-4 sm:gap-6">
-          <Link className="text-xs hover:underline underline-offset-4" href="#">
-            Terms of Service
-          </Link>
-          <Link className="text-xs hover:underline underline-offset-4" href="#">
-            Privacy
-          </Link>
+
+      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center justify-center sm:justify-between px-4 md:px-6 border-t border-border text-center">
+        <p className="text-xs text-muted-foreground">© 2026 MusicPro Manager. All rights reserved.</p>
+        <nav className="flex gap-4 sm:gap-6">
+          <span className="text-xs text-muted-foreground cursor-default hover:text-foreground transition-colors">Terms of Service</span>
+          <span className="text-xs text-muted-foreground cursor-default hover:text-foreground transition-colors">Privacy</span>
         </nav>
       </footer>
     </div>

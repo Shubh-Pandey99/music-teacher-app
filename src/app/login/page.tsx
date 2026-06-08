@@ -37,7 +37,7 @@ export default function LoginPage() {
                 router.push("/dashboard")
                 router.refresh()
             }
-        } catch (error) {
+        } catch {
             toast.error("An error occurred during login")
         } finally {
             setLoading(false)
@@ -45,34 +45,26 @@ export default function LoginPage() {
     }
 
     const features = [
-        { icon: Calendar, text: "Seamless Attendance Tracking", color: "text-teal-400" },
-        { icon: Users, text: "Centralized Student Management", color: "text-blue-400" },
-        { icon: CreditCard, text: "Automated Fee Collection", color: "text-amber-400" },
-        { icon: BarChart3, text: "Comprehensive Progress Reports", color: "text-emerald-400" },
+        { icon: Calendar, text: "Seamless Attendance Tracking", color: "text-teal-500 dark:text-teal-400" },
+        { icon: Users, text: "Centralized Student Management", color: "text-blue-500 dark:text-blue-400" },
+        { icon: CreditCard, text: "Automated Fee Collection", color: "text-amber-500 dark:text-amber-400" },
+        { icon: BarChart3, text: "Comprehensive Progress Reports", color: "text-emerald-500 dark:text-emerald-400" },
     ]
 
     return (
         <div className="flex min-h-screen w-full">
-            {/* Left Side: Branding */}
-            <div
-                className="hidden lg:flex lg:w-1/2 flex-col justify-between relative overflow-hidden p-12"
-                style={{
-                    background: 'linear-gradient(145deg, oklch(0.08 0.02 280) 0%, oklch(0.12 0.04 295) 50%, oklch(0.10 0.03 260) 100%)',
-                    borderRight: '1px solid oklch(0.22 0.03 280)'
-                }}
-            >
+            {/* Left Side: Branding — dark in dark mode, slate gradient in light mode */}
+            <div className="hidden lg:flex lg:w-1/2 flex-col justify-between relative overflow-hidden p-12 bg-gradient-to-br from-slate-900 via-violet-950 to-slate-900 dark:from-[oklch(0.08_0.02_280)] dark:via-[oklch(0.12_0.04_295)] dark:to-[oklch(0.10_0.03_260)]">
                 {/* Animated orbs */}
                 <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full animate-pulse-glow pointer-events-none"
-                    style={{ background: 'radial-gradient(circle, oklch(0.55 0.22 295 / 0.12) 0%, transparent 70%)' }} />
+                    style={{ background: 'radial-gradient(circle, oklch(0.55 0.22 295 / 0.15) 0%, transparent 70%)' }} />
                 <div className="absolute bottom-[15%] left-[-10%] w-[350px] h-[350px] rounded-full pointer-events-none"
-                    style={{ background: 'radial-gradient(circle, oklch(0.50 0.18 200 / 0.08) 0%, transparent 70%)' }} />
-                <div className="absolute top-[40%] right-[20%] w-[200px] h-[200px] rounded-full pointer-events-none"
-                    style={{ background: 'radial-gradient(circle, oklch(0.60 0.22 300 / 0.06) 0%, transparent 70%)' }} />
+                    style={{ background: 'radial-gradient(circle, oklch(0.50 0.18 200 / 0.10) 0%, transparent 70%)' }} />
 
-                {/* Grid pattern overlay */}
+                {/* Grid pattern */}
                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
                     style={{
-                        backgroundImage: 'linear-gradient(oklch(0.9 0 0 / 0.5) 1px, transparent 1px), linear-gradient(90deg, oklch(0.9 0 0 / 0.5) 1px, transparent 1px)',
+                        backgroundImage: 'linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)',
                         backgroundSize: '40px 40px'
                     }} />
 
@@ -90,7 +82,7 @@ export default function LoginPage() {
                         </div>
                         <div>
                             <span className="font-black text-2xl tracking-tight text-white">MusicPro</span>
-                            <span className="block text-[10px] text-muted-foreground/60 uppercase tracking-widest font-medium">Manager Platform</span>
+                            <span className="block text-[10px] text-white/50 uppercase tracking-widest font-medium">Manager Platform</span>
                         </div>
                     </div>
 
@@ -104,13 +96,12 @@ export default function LoginPage() {
                                     WebkitBackgroundClip: 'text',
                                     WebkitTextFillColor: 'transparent',
                                     backgroundClip: 'text',
-                                    textShadow: 'none'
                                 }}
                             >
                                 studio
                             </span>
                         </h1>
-                        <p className="text-muted-foreground text-lg leading-relaxed">
+                        <p className="text-white/70 text-lg leading-relaxed">
                             The all-in-one workstation for independent music teachers and academies to manage students, track progress, and grow their passion.
                         </p>
                     </div>
@@ -122,32 +113,20 @@ export default function LoginPage() {
                         {features.map((feature, i) => (
                             <div
                                 key={i}
-                                className="flex items-center gap-3 p-3.5 rounded-2xl transition-all duration-300 hover:scale-[1.02] cursor-default"
-                                style={{
-                                    background: 'oklch(0.15 0.03 280 / 0.6)',
-                                    backdropFilter: 'blur(12px)',
-                                    border: '1px solid oklch(0.30 0.05 280 / 0.3)'
-                                }}
+                                className="flex items-center gap-3 p-3.5 rounded-2xl transition-all duration-300 hover:scale-[1.02] cursor-default bg-white/5 border border-white/10 backdrop-blur-sm"
                             >
-                                <div className="p-1.5 rounded-lg"
-                                    style={{ background: 'oklch(0.18 0.04 280 / 0.8)' }}>
+                                <div className="p-1.5 rounded-lg bg-white/10">
                                     <feature.icon className={`h-4 w-4 ${feature.color}`} />
                                 </div>
-                                <span className="text-sm font-medium text-foreground/90">{feature.text}</span>
+                                <span className="text-sm font-medium text-white/90">{feature.text}</span>
                                 <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400/70 ml-auto" />
                             </div>
                         ))}
                     </div>
 
                     {/* Testimonial */}
-                    <div
-                        className="p-4 rounded-2xl"
-                        style={{
-                            background: 'oklch(0.14 0.03 280 / 0.7)',
-                            border: '1px solid oklch(0.28 0.04 280 / 0.4)'
-                        }}
-                    >
-                        <p className="text-muted-foreground text-sm italic leading-relaxed">
+                    <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                        <p className="text-white/60 text-sm italic leading-relaxed">
                             &ldquo;MusicPro Manager helped me double my students while spending 70% less time on admin. Game-changer for any music educator.&rdquo;
                         </p>
                         <p className="text-white font-semibold text-sm mt-2">— Sarah Chen, Professional Instructor</p>
@@ -156,16 +135,13 @@ export default function LoginPage() {
             </div>
 
             {/* Right Side: Login Form */}
-            <div
-                className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 relative overflow-hidden"
-                style={{ background: 'oklch(0.10 0.02 280)' }}
-            >
+            <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 relative overflow-hidden bg-background">
                 {/* Background decoration */}
                 <div className="absolute inset-0 pointer-events-none">
                     <div className="absolute top-[20%] right-[-5%] w-64 h-64 rounded-full"
-                        style={{ background: 'radial-gradient(circle, oklch(0.55 0.22 295 / 0.06) 0%, transparent 70%)' }} />
+                        style={{ background: 'radial-gradient(circle, oklch(0.55 0.22 295 / 0.05) 0%, transparent 70%)' }} />
                     <div className="absolute bottom-[20%] left-[-5%] w-48 h-48 rounded-full"
-                        style={{ background: 'radial-gradient(circle, oklch(0.50 0.18 200 / 0.05) 0%, transparent 70%)' }} />
+                        style={{ background: 'radial-gradient(circle, oklch(0.50 0.18 200 / 0.04) 0%, transparent 70%)' }} />
                 </div>
 
                 <div className="w-full max-w-sm space-y-8 relative z-10">
@@ -180,17 +156,13 @@ export default function LoginPage() {
                         >
                             <Music2 className="h-8 w-8 text-white" />
                         </div>
-                        <h2 className="text-3xl font-extrabold tracking-tight text-white">MusicPro</h2>
+                        <h2 className="text-3xl font-extrabold tracking-tight text-foreground">MusicPro</h2>
                         <p className="text-muted-foreground mt-2 text-sm">Manage your studio with total control.</p>
                         <div className="flex gap-2 mt-4">
                             {['Attendance', 'Fees', 'Reports'].map((f) => (
                                 <span
                                     key={f}
-                                    className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-violet-400"
-                                    style={{
-                                        background: 'oklch(0.18 0.05 295 / 0.5)',
-                                        border: '1px solid oklch(0.35 0.12 295 / 0.4)'
-                                    }}
+                                    className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-700/40"
                                 >
                                     {f}
                                 </span>
@@ -200,7 +172,7 @@ export default function LoginPage() {
 
                     {/* Form Header */}
                     <div className="space-y-1 animate-float-up stagger-1">
-                        <h2 className="text-3xl font-bold tracking-tight text-white">Welcome back</h2>
+                        <h2 className="text-3xl font-bold tracking-tight text-foreground">Welcome back</h2>
                         <p className="text-muted-foreground">Sign in to your studio workspace</p>
                     </div>
 
@@ -225,9 +197,9 @@ export default function LoginPage() {
                                     <Label htmlFor="password" className="text-sm font-semibold text-foreground/90">
                                         Password
                                     </Label>
-                                    <Link href="#" className="text-xs text-violet-400 hover:text-violet-300 font-medium transition-colors">
+                                    <span className="text-xs text-violet-500 font-medium cursor-default">
                                         Forgot password?
-                                    </Link>
+                                    </span>
                                 </div>
                                 <Input
                                     id="password"
@@ -267,7 +239,7 @@ export default function LoginPage() {
                             <div className="w-full border-t border-border/40" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                            <span className="px-3 text-muted-foreground/60 font-medium" style={{ background: 'oklch(0.10 0.02 280)' }}>
+                            <span className="px-3 text-muted-foreground/60 font-medium bg-background">
                                 New here?
                             </span>
                         </div>
@@ -275,7 +247,7 @@ export default function LoginPage() {
 
                     <p className="text-center text-sm text-muted-foreground animate-float-up stagger-4">
                         Join thousands of music educators.{" "}
-                        <Link href="/signup" className="text-violet-400 font-bold hover:text-violet-300 transition-colors underline-offset-4 hover:underline">
+                        <Link href="/signup" className="text-violet-500 font-bold hover:text-violet-600 dark:hover:text-violet-300 transition-colors underline-offset-4 hover:underline">
                             Create free account
                         </Link>
                     </p>
