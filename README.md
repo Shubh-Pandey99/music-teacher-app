@@ -10,7 +10,7 @@
 
 **A SaaS-ready application for teachers to manage student attendance, track performance, and streamline classroom operations.**
 
-[GitHub Repo](https://github.com/Shubh-Pandey99/music-teacher-app)
+👉 **Live App:** [dynamic-filament.vercel.app](https://dynamic-filament.vercel.app/)
 
 </div>
 
