@@ -1,63 +1,69 @@
+# 🎵 Music Teacher App
 
-# MusicPro Manager 🎵
+<div align="center">
 
-A robust, full-stack application for music teachers to manage their students, tracking attendance, and handling fee payments.
+![Music Teacher App](https://img.shields.io/badge/Status-Live-brightgreen?style=for-the-badge)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=for-the-badge&logo=vercel)](https://music-teacher-app-three.vercel.app)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-000?style=for-the-badge&logo=next.js&logoColor=white)
 
-## Features
-- **Student Management**: Add, update, and manage student profiles.
-- **Attendance Tracking**: Specialized tracking for monthly quotas (e.g., 12 classes/month) with support for extra classes.
-- **Fee Management**: Track payments in INR (₹) with status indicators (Paid, Partial, Pending).
-- **Dashboard**: Real-time stats on attendance, pending fees, and upcoming schedules.
-- **Reports**: Generate monthly reports and export to CSV.
-- **Secure Auth**: Authentication via NextAuth.js with bcrypt password hashing and rate limiting.
+**A full-stack platform for music teachers — manage students, schedule lessons, track progress.**
 
-## Tech Stack
-- **Framework**: Next.js 16 (App Router)
-- **Database**: SQLite with Prisma ORM
-- **Styling**: Tailwind CSS 4 & Shadcn UI
-- **Auth**: NextAuth.js 5
-- **Validation**: Zod
+[🚀 Live Demo](https://music-teacher-app-three.vercel.app) · [🐛 Report Bug](https://github.com/Shubh-Pandey99/music-teacher-app/issues) · [💡 Request Feature](https://github.com/Shubh-Pandey99/music-teacher-app/issues)
 
-## Getting Started
+</div>
 
-### Prerequisites
-- Node.js 18+
-- npm/pnpm
+---
 
-### Installation
-1. Clone the repository.
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Set up environment variables:
-   Copy `.env.example` to `.env` and fill in the values.
-   ```bash
-   cp .env.example .env
-   ```
-4. Initialize the database:
-   ```bash
-   npx prisma db push
-   ```
-5. Seed the database (optional):
-   ```bash
-   npm run prisma:seed
-   ```
-6. Run the development server:
-   ```bash
-   npm run dev
-   ```
+## ✨ Features
 
-### Scripts
-- `npm run dev`: Start development server.
-- `npm run build`: Build for production.
-- `npm run lint`: Run ESLint checks.
-- `npx prisma studio`: Open database GUI.
+- 🗓️ **Lesson Scheduling** — Book and manage music lessons with calendar integration
+- 👨‍🎓 **Student Management** — Track student progress, notes, and attendance
+- 🎼 **Repertoire Tracking** — Manage songs and pieces students are learning
+- 📊 **Dashboard** — At-a-glance overview of upcoming lessons and student stats
+- 🔐 **Authentication** — Secure login for teachers and students
 
-## Deployment Notes
-The app is designed to be deployed on platforms like Vercel or Railway.
-- Ensure `DATABASE_URL` and `AUTH_SECRET` are set in production.
-- For SQLite persistence, use a persistent volume (e.g., on Railway) or migrate to PostgreSQL.
+## 🛠️ Tech Stack
 
-## License
-MIT
+| Layer | Technology |
+|-------|-----------|
+| **Framework** | Next.js 14 (App Router) |
+| **Language** | TypeScript |
+| **Styling** | Tailwind CSS |
+| **Database** | Prisma ORM |
+| **Deployment** | Vercel |
+
+## 🚀 Getting Started
+
+```bash
+# Clone the repository
+git clone https://github.com/Shubh-Pandey99/music-teacher-app.git
+cd music-teacher-app
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env.local
+
+# Run the development server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to view the app.
+
+## 🌐 Live Demo
+
+Check it out at: **[music-teacher-app-three.vercel.app](https://music-teacher-app-three.vercel.app)**
+
+## 📄 License
+
+This project is open source. Feel free to use and adapt it.
+
+---
+
+<div align="center">
+
+Made with ❤️ by [Shubh Pandey](https://github.com/Shubh-Pandey99)
+
+</div>
