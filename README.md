@@ -10,7 +10,7 @@
 
 **A professional SaaS application designed for teachers to securely manage student attendance, track performance, and streamline classroom operations.**
 
-👉 **Live App:** [dynamic-filament.vercel.app](https://dynamic-filament.vercel.app/)
+👉 **Live App:** [View Project](https://dynamic-filament.vercel.app/)
 
 </div>
 
