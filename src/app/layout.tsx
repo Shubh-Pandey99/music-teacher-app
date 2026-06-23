@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { cn } from "@/lib/utils"
-import { NavigationWrapper } from "@/components/navigation-wrapper"
-import { ThemeProvider } from "@/components/theme-provider"
+import { NavigationWrapper } from "@/components/layout/navigation-wrapper"
+import { ThemeProvider } from "@/components/layout/theme-provider"
 import { Toaster } from "sonner"
 
 const inter = Inter({

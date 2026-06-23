@@ -5,7 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { LayoutDashboard, Users, CalendarCheck, Banknote, BarChart3, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { LogoutButton } from "./auth/logout-button"
+import { LogoutButton } from "../auth/logout-button"
 
 const navItems = [
     {
